@@ -9,6 +9,7 @@ COPY pom.xml .
 COPY src ./src
 RUN mvn clean package
 
+ENV MONGODB_URI=mongodb+srv://fcortezb2:<password>@induct3d.aomakv1.mongodb.net/?retryWrites=true&w=majority&appName=Induct3d
 
 # Copy the entire project
 COPY . .
