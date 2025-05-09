@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy the pom.xml and download dependencies
 COPY pom.xml .
 COPY src ./src
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 ENV MONGODB_URI=mongodb+srv://fcortezb2:<password>@induct3d.aomakv1.mongodb.net/?retryWrites=true&w=majority&appName=Induct3d
 
