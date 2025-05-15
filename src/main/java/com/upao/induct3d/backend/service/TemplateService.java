@@ -3,6 +3,7 @@ package com.upao.induct3d.backend.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.upao.induct3d.backend.entity.Template;
+import org.springframework.beans.factory.annotation.Value;
 import com.upao.induct3d.backend.exception.UploadException;
 import com.upao.induct3d.backend.repository.TemplateRepository;
 import org.bson.types.ObjectId;
@@ -11,13 +12,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class TemplateService {
+
+    @Value("${cloudinary.cloud-name}")
+    private String cloudName;
 
     @Autowired private TemplateRepository templateRepo;
     @Autowired private Cloudinary cloudinary;
@@ -31,13 +32,26 @@ public class TemplateService {
             List<String> imageUrls = new ArrayList<>();
             for (MultipartFile image : images) {
                 validateImageFile(image);
-                Map upload = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap());
-                imageUrls.add((String) upload.get("secure_url"));
+                Map imageUpload = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap());
+                imageUrls.add((String) imageUpload.get("secure_url"));
             }
 
             validateGlbFile(glbFile);
-            Map glbUpload = cloudinary.uploader().upload(glbFile.getBytes(), ObjectUtils.asMap("resource_type", "raw"));
-            String glbUrl = (String) glbUpload.get("secure_url");
+
+            String uuid = UUID.randomUUID().toString();
+            String publicId = "templates/modelo_" + uuid + ".glb";
+
+            cloudinary.uploader().upload(
+                    glbFile.getBytes(),
+                    ObjectUtils.asMap(
+                            "resource_type", "raw",
+                            "public_id", publicId,
+                            "use_filename", false,
+                            "unique_filename", false
+                    )
+            );
+
+            String glbUrl = "https://res.cloudinary.com/" + cloudName + "/raw/upload/" + publicId;
 
             Template template = new Template();
             template.setName(name);
