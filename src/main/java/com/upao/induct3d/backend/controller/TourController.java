@@ -37,6 +37,8 @@ public class TourController {
 
         Tour tour = new Tour();
         tour.setTemplateId(new ObjectId(request.getTemplateId()));
+        tour.setTourName(request.getTourName());
+        tour.setDescription(request.getDescription());
         tour.setVoiceText(request.getVoiceText());
         tour.setMaterialColors(request.getMaterialColors());
 
@@ -68,6 +70,8 @@ public class TourController {
             throw new AttributeException("No tienes permisos para editar este tour");
         }
 
+        existing.setTourName(request.getTourName());
+        existing.setDescription(request.getDescription());
         existing.setVoiceText(request.getVoiceText());
         existing.setMaterialColors(request.getMaterialColors());
 

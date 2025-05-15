@@ -14,6 +14,8 @@ public class Tour {
 
     private ObjectId templateId;
     private ObjectId userId;
+    private String tourName;
+    private String description;
     private String voiceText;
     private Map<String, String> materialColors;
 
@@ -26,6 +28,12 @@ public class Tour {
     }
     public ObjectId getUserId() {
         return userId;
+    }
+    public String getTourName() {
+        return tourName;
+    }
+    public String getDescription() {
+        return description;
     }
     public String getVoiceText() {
         return voiceText;
@@ -43,6 +51,12 @@ public class Tour {
     }
     public void setUserId(ObjectId userId) {
         this.userId = userId;
+    }
+    public void setTourName(String tourName) {
+        this.tourName = tourName;
+    }
+    public void setDescription(String description) {
+        this.description = description;
     }
     public void setVoiceText(String voiceText) {
         this.voiceText = voiceText;

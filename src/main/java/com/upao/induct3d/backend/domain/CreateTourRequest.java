@@ -4,11 +4,19 @@ import java.util.Map;
 
 public class CreateTourRequest {
     private String templateId;
+    private String tourName;
+    private String description;
     private String voiceText;
     private Map<String, String> materialColors;
 
     public String getTemplateId() {
         return templateId;
+    }
+    public String getTourName() {
+        return tourName;
+    }
+    public String getDescription() {
+        return description;
     }
     public String getVoiceText() {
         return voiceText;
@@ -19,6 +27,12 @@ public class CreateTourRequest {
 
     public void setTemplateId(String templateId) {
         this.templateId = templateId;
+    }
+    public void setTourName(String tourName) {
+        this.tourName = tourName;
+    }
+    public void setDescription(String description) {
+        this.description = description;
     }
     public void setVoiceText(String voiceText) {
         this.voiceText = voiceText;
