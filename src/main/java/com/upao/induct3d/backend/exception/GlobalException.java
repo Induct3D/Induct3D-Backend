@@ -43,4 +43,11 @@ public class GlobalException {
         return ResponseEntity.badRequest()
                 .body(new MessageDTO(HttpStatus.BAD_REQUEST, Operations.trimBrackets(messages.toString())));
     }
+
+    @ExceptionHandler(UploadException.class)
+    public ResponseEntity<MessageDTO> uploadException(UploadException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new MessageDTO(HttpStatus.BAD_REQUEST, e.getMessage()));
+    }
+
 }
