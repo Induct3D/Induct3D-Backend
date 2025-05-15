@@ -11,12 +11,6 @@ import java.util.Properties;
 @Configuration
 public class MailConfiguration {
 
-    @Value("${email.sender}")
-    private String emailUser;
-
-    @Value("${email.password}")
-    private String emailPassword;
-
     @Bean
     public JavaMailSender getJavaMailSender() {
         //Objeto que va a configurar el envío de los emails
@@ -24,7 +18,9 @@ public class MailConfiguration {
 
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
+        String emailUser = "";
         mailSender.setUsername(emailUser);
+        String emailPassword = "";
         mailSender.setPassword(emailPassword);
 
         //Se obtiene las propiedades del mailSender

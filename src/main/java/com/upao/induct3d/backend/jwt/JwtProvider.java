@@ -19,19 +19,16 @@ public class JwtProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtEntryPoint.class);
 
-    @Value("${jwt.secret}")
-    private String secret;
-
-    @Value("${jwt.expiration}")
-    private int expiration;
+    private final String secret = "secretsecretsecretsecretsecretsecretsecretsecret";
 
     public String generateToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        int expiration = 36000;
         return Jwts.builder()
                 .signWith(getKey(secret))
                 .setSubject(userPrincipal.getUsername())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(new Date().getTime() + expiration * 1000))
+                .setExpiration(new Date(new Date().getTime() + expiration * 1000L))
                 .claim("cara", "feísima")
                 .compact();
     }

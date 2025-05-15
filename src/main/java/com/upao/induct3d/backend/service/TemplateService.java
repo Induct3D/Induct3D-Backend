@@ -17,9 +17,6 @@ import java.util.*;
 @Service
 public class TemplateService {
 
-    @Value("${cloudinary.cloud-name}")
-    private String cloudName;
-
     @Autowired private TemplateRepository templateRepo;
     @Autowired private Cloudinary cloudinary;
 
@@ -51,6 +48,7 @@ public class TemplateService {
                     )
             );
 
+            String cloudName = "dcaklppjz";
             String glbUrl = "https://res.cloudinary.com/" + cloudName + "/raw/upload/" + publicId;
 
             Template template = new Template();

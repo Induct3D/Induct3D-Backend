@@ -8,9 +8,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailServiceImpl implements IEmailService{
 
-    @Value("${email.sender}")
-    private String emailUser;
-
     private final JavaMailSender mailSender;
 
     public EmailServiceImpl(JavaMailSender mailSender) {
@@ -22,6 +19,7 @@ public class EmailServiceImpl implements IEmailService{
 
         SimpleMailMessage mailMessage = new SimpleMailMessage();
 
+        String emailUser = "";
         mailMessage.setFrom(emailUser); //El que envia el correo (Induct3D)
         mailMessage.setTo(toUser); //Correos a los que se les va a enviar el email
         mailMessage.setSubject(subject); //Asunto del correo
