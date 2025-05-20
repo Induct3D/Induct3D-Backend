@@ -53,6 +53,12 @@ public class TemplateController {
         return ResponseEntity.ok(templates);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Template>> getTemplates() {
+        List<Template> templates = templateService.getTemplates();
+        return ResponseEntity.ok(templates);
+    }
+
     @GetMapping("/{templateId}/glb")
     public ResponseEntity<String> getGlbUrl(@PathVariable String templateId) {
         return templateService.getGlbUrlByTemplateId(templateId)

@@ -69,6 +69,10 @@ public class TemplateService {
         return templateRepo.findByUserId(userId);
     }
 
+    public List<Template> getTemplates() {
+        return templateRepo.findAll();
+    }
+
     public Optional<String> getGlbUrlByTemplateId(String templateId) {
         return templateRepo.findById(templateId).map(Template::getGlbUrl);
     }
