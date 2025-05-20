@@ -1,4 +1,4 @@
-package com.upao.induct3d.backend.domain;
+package com.upao.induct3d.backend.domain.request;
 
 import java.util.Map;
 

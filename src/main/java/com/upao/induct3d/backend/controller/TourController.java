@@ -1,7 +1,8 @@
 package com.upao.induct3d.backend.controller;
 
-import com.upao.induct3d.backend.domain.CreateTourRequest;
-import com.upao.induct3d.backend.domain.UpdateTourRequest;
+import com.upao.induct3d.backend.domain.request.CreateTourRequest;
+import com.upao.induct3d.backend.domain.request.UpdateTourRequest;
+import com.upao.induct3d.backend.domain.response.TourResponse;
 import com.upao.induct3d.backend.entity.Tour;
 import com.upao.induct3d.backend.exception.AttributeException;
 import com.upao.induct3d.backend.exception.ResourceNotFoundException;
@@ -15,7 +16,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tours")
@@ -53,29 +53,23 @@ public class TourController {
     }
 
     @GetMapping("/{tourId}")
-    public ResponseEntity<Tour> getTourById(@PathVariable String tourId) throws ResourceNotFoundException {
+    public ResponseEntity<TourResponse> getTourById(@PathVariable String tourId) throws ResourceNotFoundException {
         return tourService.getTourById(tourId)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ResourceNotFoundException("Tour no encontrado"));
     }
 
     @PutMapping("/{tourId}")
-    public ResponseEntity<Tour> updateTour(@PathVariable String tourId, @RequestBody UpdateTourRequest request) throws ResourceNotFoundException, AttributeException {
+    public ResponseEntity<TourResponse> updateTour(
+            @PathVariable String tourId,
+            @RequestBody UpdateTourRequest request
+    ) throws ResourceNotFoundException, AttributeException {
         ObjectId userId = getCurrentUserId();
 
-        Tour existing = tourService.getTourById(tourId)
-                .orElseThrow(() -> new ResourceNotFoundException("Tour no encontrado"));
+        // Delegamos toda la lógica (fetch, permisos, save y mapeo DTO) al servicio:
+        TourResponse updated = tourService.updateTour(tourId, request, userId);
 
-        if (!existing.getUserId().equals(userId)) {
-            throw new AttributeException("No tienes permisos para editar este tour");
-        }
-
-        existing.setTourName(request.getTourName());
-        existing.setDescription(request.getDescription());
-        existing.setVoiceText(request.getVoiceText());
-        existing.setMaterialColors(request.getMaterialColors());
-
-        return ResponseEntity.ok(tourService.createTour(existing, userId));
+        return ResponseEntity.ok(updated);
     }
 
 }
