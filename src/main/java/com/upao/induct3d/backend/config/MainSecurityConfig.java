@@ -45,7 +45,7 @@ public class MainSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:5173"); // tu frontend
+        configuration.addAllowedOrigin("https://induct3d.netlify.app/"); // tu frontend
         configuration.addAllowedMethod("*"); // GET, POST, etc.
         configuration.addAllowedHeader("*"); // Authorization, Content-Type, etc.
         configuration.setAllowCredentials(true); // permite cookies/autenticación
