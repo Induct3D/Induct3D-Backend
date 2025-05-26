@@ -16,7 +16,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -39,10 +38,12 @@ public class TemplateController {
             @RequestParam String name,
             @RequestParam String description,
             @RequestParam("images") List<MultipartFile> images,
-            @RequestParam("glb") MultipartFile glbFile
+            @RequestParam("glb") MultipartFile glbFile,
+            @RequestParam(required = false) String userStart,
+            @RequestParam(required = false) String predefinedSteps
     ) {
-        ObjectId userId = getCurrentUserId();
-        Template saved = templateService.saveTemplate(name, description, images, glbFile, userId);
+        ObjectId userId = null;
+        Template saved = templateService.saveTemplate(name, description, images, glbFile, userStart, predefinedSteps, userId);
         return ResponseEntity.ok(saved);
     }
 

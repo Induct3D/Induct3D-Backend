@@ -31,6 +31,7 @@ public class TourController {
                 .getId();
     }
 
+    // Create tour
     @PostMapping("/create")
     public ResponseEntity<Tour> createTour(@RequestBody CreateTourRequest request) {
         ObjectId userId = getCurrentUserId();
@@ -47,12 +48,14 @@ public class TourController {
         return ResponseEntity.ok(saved);
     }
 
+    // Get all my tours
     @GetMapping("/my")
     public ResponseEntity<List<Tour>> getMyTours() {
         ObjectId userId = getCurrentUserId();
         return ResponseEntity.ok(tourService.getToursByUser(userId));
     }
 
+    // Get a tour of ID
     @GetMapping("/{tourId}")
     public ResponseEntity<TourResponse> getTourById(@PathVariable String tourId) throws ResourceNotFoundException {
         return tourService.getTourById(tourId)
@@ -60,19 +63,12 @@ public class TourController {
                 .orElseThrow(() -> new ResourceNotFoundException("Tour no encontrado"));
     }
 
+    // Update the tour of ID
     @PutMapping("/{tourId}")
-    public ResponseEntity<TourResponse> updateTour(
-            @PathVariable String tourId,
-            @RequestBody UpdateTourRequest request
-    ) throws ResourceNotFoundException, AttributeException {
+    public ResponseEntity<TourResponse> updateTour(@PathVariable String tourId, @RequestBody UpdateTourRequest request)
+            throws ResourceNotFoundException, AttributeException {
         ObjectId userId = getCurrentUserId();
-
-        // Delegamos toda la lógica (fetch, permisos, save y mapeo DTO) al servicio:
         TourResponse updated = tourService.updateTour(tourId, request, userId);
-
         return ResponseEntity.ok(updated);
     }
-
 }
-
-

@@ -2,6 +2,9 @@ package com.upao.induct3d.backend.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upao.induct3d.backend.entity.Template;
 import org.springframework.beans.factory.annotation.Value;
 import com.upao.induct3d.backend.exception.UploadException;
@@ -20,7 +23,7 @@ public class TemplateService {
     @Autowired private TemplateRepository templateRepo;
     @Autowired private Cloudinary cloudinary;
 
-    public Template saveTemplate(String name, String description, List<MultipartFile> images, MultipartFile glbFile, ObjectId userId) {
+    public Template saveTemplate(String name, String description, List<MultipartFile> images, MultipartFile glbFile, String userStartJson, String predefinedStepsJson, ObjectId userId) {
         try {
             if (images.size() > 3) {
                 throw new UploadException("Solo se permiten hasta 3 imágenes por template.");
@@ -56,7 +59,28 @@ public class TemplateService {
             template.setDescription(description);
             template.setImages(imageUrls);
             template.setGlbUrl(glbUrl);
-            template.setUserId(userId);
+            if (userId != null) {
+                template.setUserId(userId);
+            }
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            try {
+                if (userStartJson != null && !userStartJson.isEmpty()) {
+                    Template.Vector3 userStart = objectMapper.readValue(userStartJson, Template.Vector3.class);
+                    template.setUserStart(userStart);
+                }
+
+                if (predefinedStepsJson != null && !predefinedStepsJson.isEmpty()) {
+                    List<Template.PredefinedStep> steps = objectMapper.readValue(
+                            predefinedStepsJson,
+                            new TypeReference<List<Template.PredefinedStep>>() {}
+                    );
+                    template.setPredefinedSteps(steps);
+                }
+            } catch (JsonProcessingException e) {
+                throw new UploadException("Error al interpretar campos JSON: " + e.getMessage());
+            }
 
             return templateRepo.save(template);
 

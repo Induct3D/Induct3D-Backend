@@ -51,7 +51,8 @@ public class TourService {
                             t.getDescription(),
                             t.getVoiceText(),
                             t.getMaterialColors(),
-                            tpl.getGlbUrl()
+                            tpl.getGlbUrl(),
+                            t.getSteps()
                     );
                 });
     }
@@ -72,7 +73,7 @@ public class TourService {
 
         Tour saved = tourRepository.save(existing);
         Template tpl = templateRepository.findById(saved.getTemplateId().toHexString()).orElseThrow(() -> new ResourceNotFoundException("Template no existe"));
-        return new TourResponse(saved.getTourId(), saved.getTourName(), saved.getDescription(), saved.getVoiceText(), saved.getMaterialColors(), tpl.getGlbUrl());
+        return new TourResponse(saved.getTourId(), saved.getTourName(), saved.getDescription(), saved.getVoiceText(), saved.getMaterialColors(), tpl.getGlbUrl(), saved.getSteps());
     }
 
     // Get tour for Template
