@@ -1,5 +1,7 @@
 package com.upao.induct3d.backend.domain.request;
 
+import com.upao.induct3d.backend.entity.Tour;
+import java.util.List;
 import java.util.Map;
 
 public class CreateTourRequest {
@@ -8,6 +10,7 @@ public class CreateTourRequest {
     private String description;
     private String voiceText;
     private Map<String, String> materialColors;
+    private List<Tour.Step> steps;
 
     public String getTemplateId() {
         return templateId;
@@ -24,6 +27,9 @@ public class CreateTourRequest {
     public Map<String, String> getMaterialColors() {
         return materialColors;
     }
+    public List<Tour.Step> getSteps() {
+        return steps;
+    }
 
     public void setTemplateId(String templateId) {
         this.templateId = templateId;
@@ -39,6 +45,9 @@ public class CreateTourRequest {
     }
     public void setMaterialColors(Map<String, String> materialColors) {
         this.materialColors = materialColors;
+    }
+    public void setSteps(List<Tour.Step> steps) {
+        this.steps = steps;
     }
 
     public static class MaterialChangeDTO {

@@ -68,6 +68,7 @@ public class TourService {
         existing.setDescription(req.getDescription());
         existing.setVoiceText(req.getVoiceText());
         existing.setMaterialColors(req.getMaterialColors());
+        existing.setSteps(req.getSteps());
 
         Tour saved = tourRepository.save(existing);
         Template tpl = templateRepository.findById(saved.getTemplateId().toHexString()).orElseThrow(() -> new ResourceNotFoundException("Template no existe"));

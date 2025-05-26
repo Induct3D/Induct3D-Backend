@@ -4,6 +4,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
 import java.util.Map;
 
 @Document(collection = "tours")
@@ -18,6 +19,7 @@ public class Tour {
     private String description;
     private String voiceText;
     private Map<String, String> materialColors;
+    private List<Step> steps;
 
     // GETTERS
     public String getTourId() {
@@ -40,6 +42,9 @@ public class Tour {
     }
     public Map<String, String> getMaterialColors() {
         return materialColors;
+    }
+    public List<Step> getSteps() {
+        return steps;
     }
 
     // SETTERS
@@ -64,6 +69,9 @@ public class Tour {
     public void setMaterialColors(Map<String, String> materialColors) {
         this.materialColors = materialColors;
     }
+    public void setSteps(List<Step> steps) {
+        this.steps = steps;
+    }
 
     public static class MaterialChange {
         private String name;
@@ -72,17 +80,57 @@ public class Tour {
         public String getName() {
             return name;
         }
-
         public String getColor() {
             return color;
         }
-
         public void setName(String name) {
             this.name = name;
         }
-
         public void setColor(String color) {
             this.color = color;
+        }
+    }
+
+    public static class Step {
+        private String stepId;
+        private List<String> messages;
+        private BoardMedia boardMedia;
+
+        public String getStepId() {
+            return stepId;
+        }
+        public void setStepId(String stepId) {
+            this.stepId = stepId;
+        }
+        public List<String> getMessages() {
+            return messages;
+        }
+        public void setMessages(List<String> messages) {
+            this.messages = messages;
+        }
+        public BoardMedia getBoardMedia() {
+            return boardMedia;
+        }
+        public void setBoardMedia(BoardMedia boardMedia) {
+            this.boardMedia = boardMedia;
+        }
+    }
+
+    public static class BoardMedia {
+        private String type; // "image" o "video"
+        private List<String> urls;
+
+        public String getType() {
+            return type;
+        }
+        public void setType(String type) {
+            this.type = type;
+        }
+        public List<String> getUrls() {
+            return urls;
+        }
+        public void setUrls(List<String> urls) {
+            this.urls = urls;
         }
     }
 }

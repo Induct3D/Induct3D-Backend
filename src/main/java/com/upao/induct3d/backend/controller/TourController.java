@@ -41,6 +41,7 @@ public class TourController {
         tour.setDescription(request.getDescription());
         tour.setVoiceText(request.getVoiceText());
         tour.setMaterialColors(request.getMaterialColors());
+        tour.setSteps(request.getSteps());
 
         Tour saved = tourService.createTour(tour, userId);
         return ResponseEntity.ok(saved);
