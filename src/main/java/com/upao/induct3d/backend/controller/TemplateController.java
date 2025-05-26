@@ -59,7 +59,7 @@ public class TemplateController {
         return ResponseEntity.ok(templates);
     }
 
-    @GetMapping("/{templateId}/glb")
+    @GetMapping("/glb/{templateId}")
     public ResponseEntity<String> getGlbUrl(@PathVariable String templateId) {
         return templateService.getGlbUrlByTemplateId(templateId)
                 .map(ResponseEntity::ok)
