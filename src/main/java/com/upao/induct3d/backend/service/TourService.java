@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TourService {
@@ -35,25 +36,16 @@ public class TourService {
 
     // Get tour for TourID
     public Optional<TourResponse> getTourById(String id) {
-        return tourRepository.findById(id)
-                .map(t -> {
+        return tourRepository.findById(id).map(tour -> {
                     Template tpl = null;
                     try {
-                        tpl = templateRepository
-                                .findById(t.getTemplateId().toHexString())
+                        tpl = templateRepository.findById(tour.getTemplateId().toHexString())
                                 .orElseThrow(() -> new ResourceNotFoundException("Template no existe"));
                     } catch (ResourceNotFoundException e) {
                         throw new RuntimeException(e);
                     }
-                    return new TourResponse(
-                            t.getTourId(),
-                            t.getTourName(),
-                            t.getDescription(),
-                            t.getMaterialColors(),
-                            tpl.getGlbUrl(),
-                            t.getSteps()
-                    );
-                });
+                    return buildTourResponse(tour, tpl);
+        });
     }
 
     // Update tour for TourID
@@ -71,12 +63,43 @@ public class TourService {
 
         Tour saved = tourRepository.save(existing);
         Template tpl = templateRepository.findById(saved.getTemplateId().toHexString()).orElseThrow(() -> new ResourceNotFoundException("Template no existe"));
-        return new TourResponse(saved.getTourId(), saved.getTourName(), saved.getDescription(), saved.getMaterialColors(), tpl.getGlbUrl(), saved.getSteps());
+        return buildTourResponse(saved, tpl);
     }
 
     // Get tour for Template
     public List<Tour> getToursByTemplate(ObjectId templateId) {
         return tourRepository.findByTemplateId(templateId);
     }
+
+    private TourResponse buildTourResponse(Tour tour, Template tpl) {
+        TourResponse.Vector3 userStart = new TourResponse.Vector3(
+                tpl.getUserStart().getX(),
+                tpl.getUserStart().getY(),
+                tpl.getUserStart().getZ()
+        );
+
+        List<TourResponse.PredefinedStep> predefinedSteps = tpl.getPredefinedSteps()
+                .stream()
+                .map(ps -> new TourResponse.PredefinedStep(
+                        ps.getId(),
+                        ps.getPosition().stream()
+                                .map(v -> new TourResponse.Vector3(v.getX(), v.getY(), v.getZ()))
+                                .collect(Collectors.toList()),
+                        ps.isHasBoard()
+                ))
+                .collect(Collectors.toList());
+
+        return new TourResponse(
+                tour.getTourId(),
+                tour.getTourName(),
+                tour.getDescription(),
+                tour.getMaterialColors(),
+                tpl.getGlbUrl(),
+                tour.getSteps(),
+                userStart,
+                predefinedSteps
+        );
+    }
+
 }
 
