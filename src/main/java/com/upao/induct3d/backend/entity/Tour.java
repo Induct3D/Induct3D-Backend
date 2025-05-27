@@ -17,7 +17,6 @@ public class Tour {
     private ObjectId userId;
     private String tourName;
     private String description;
-    private String voiceText;
     private Map<String, String> materialColors;
     private List<Step> steps;
 
@@ -36,9 +35,6 @@ public class Tour {
     }
     public String getDescription() {
         return description;
-    }
-    public String getVoiceText() {
-        return voiceText;
     }
     public Map<String, String> getMaterialColors() {
         return materialColors;
@@ -62,9 +58,6 @@ public class Tour {
     }
     public void setDescription(String description) {
         this.description = description;
-    }
-    public void setVoiceText(String voiceText) {
-        this.voiceText = voiceText;
     }
     public void setMaterialColors(Map<String, String> materialColors) {
         this.materialColors = materialColors;

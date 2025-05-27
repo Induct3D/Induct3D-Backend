@@ -40,7 +40,6 @@ public class TourController {
         tour.setTemplateId(new ObjectId(request.getTemplateId()));
         tour.setTourName(request.getTourName());
         tour.setDescription(request.getDescription());
-        tour.setVoiceText(request.getVoiceText());
         tour.setMaterialColors(request.getMaterialColors());
         tour.setSteps(request.getSteps());
 
