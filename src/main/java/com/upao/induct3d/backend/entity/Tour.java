@@ -110,21 +110,10 @@ public class Tour {
     }
 
     public static class BoardMedia {
-        private String type; // "image" o "video"
-        private List<String> urls;
+        private String html;
 
-        public String getType() {
-            return type;
-        }
-        public void setType(String type) {
-            this.type = type;
-        }
-        public List<String> getUrls() {
-            return urls;
-        }
-        public void setUrls(List<String> urls) {
-            this.urls = urls;
-        }
+        public String getHtml() {return html;}
+        public void setHtml(String html) {this.html = html;}
     }
 }
 
