@@ -1,6 +1,6 @@
 package com.upao.induct3d.backend.service;
 
-import com.upao.induct3d.backend.entity.UserEntity;
+import com.upao.induct3d.backend.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -23,7 +23,7 @@ public class UserPrincipal implements UserDetails {
         this.surname = surname;
     }
 
-    public static UserPrincipal build(UserEntity user) {
+    public static UserPrincipal build(User user) {
         return new UserPrincipal(
                 user.getUsername(),
                 user.getEmail(),

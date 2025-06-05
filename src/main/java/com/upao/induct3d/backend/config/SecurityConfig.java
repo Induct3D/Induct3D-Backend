@@ -25,7 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class MainSecurityConfig {
+public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final PasswordEncoder passwordEncoder;
@@ -34,7 +34,7 @@ public class MainSecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
 
     @Autowired
-    public MainSecurityConfig(UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder, JwtEntryPoint jwtEntryPoint, JwtFilter jwtFilter, AuthenticationConfiguration authenticationConfiguration) {
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder, JwtEntryPoint jwtEntryPoint, JwtFilter jwtFilter, AuthenticationConfiguration authenticationConfiguration) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.jwtEntryPoint = jwtEntryPoint;

@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "users")
-public class UserEntity {
+public class User {
 
     @Id
     private ObjectId id;
@@ -15,10 +15,10 @@ public class UserEntity {
     private String name;
     private String surname;
 
-    public UserEntity() {
+    public User() {
     }
 
-    public UserEntity(ObjectId id, String username, String email, String password, String name, String surname) {
+    public User(ObjectId id, String username, String email, String password, String name, String surname) {
         this.id = id;
         this.username = username;
         this.email = email;

@@ -1,4 +1,4 @@
-package com.upao.induct3d.backend.service;
+package com.upao.induct3d.backend.repository;
 
 public interface IEmailService {
 

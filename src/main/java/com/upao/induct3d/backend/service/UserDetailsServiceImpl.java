@@ -1,6 +1,6 @@
 package com.upao.induct3d.backend.service;
 
-import com.upao.induct3d.backend.entity.UserEntity;
+import com.upao.induct3d.backend.entity.User;
 import com.upao.induct3d.backend.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,9 +18,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository
+        User user = userRepository
                 .findByUsernameOrEmail(username, username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-        return UserPrincipal.build(userEntity);
+        return UserPrincipal.build(user);
     }
 }
