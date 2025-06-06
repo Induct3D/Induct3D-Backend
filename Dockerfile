@@ -1,33 +1,20 @@
-# First stage: Build the application
+# Etapa de compilación
 FROM maven:3.9.4-eclipse-temurin-21 AS build
 
-# Set the working directory inside the container
 WORKDIR /app
-
-# Copy the pom.xml and download dependencies
 COPY pom.xml .
 COPY src ./src
+
+# Construir la aplicación
 RUN mvn clean package -DskipTests
 
-ENV MONGODB_URI=mongodb+srv://fcortezb2:MF9MmwzglrDBgY3f@induct3d.aomakv1.mongodb.net/?retryWrites=true&w=majority&appName=Induct3d
-
-# Copy the entire project
-COPY . .
-
-# Build the application
-RUN mvn clean package
-
-# Second stage: Run the application
+# Etapa de ejecución
 FROM eclipse-temurin:21-jdk-alpine
 
-# Establecer el directorio de trabajo
 WORKDIR /app
-
-# Copiar el archivo JAR de la aplicación al contenedor
 COPY --from=build /app/target/*.jar app.jar
 
-# Exponer el puerto en el que la aplicación se ejecutará
 EXPOSE 8080
 
-# Comando para ejecutar la aplicación
+# Arrancar en el puerto asignado por Heroku
 ENTRYPOINT ["java", "-jar", "app.jar", "--server.port=${PORT}"]
