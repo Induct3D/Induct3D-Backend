@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class TourService {
 
     @Autowired private TourRepository tourRepository;
-
     @Autowired private TemplateRepository templateRepository;
 
     // Create tour

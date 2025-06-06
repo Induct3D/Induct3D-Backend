@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +17,6 @@ import java.util.Date;
 public class JwtProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtEntryPoint.class);
-
     private final String secret = "secretsecretsecretsecretsecretsecretsecretsecret";
 
     public String generateToken(Authentication authentication) {

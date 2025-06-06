@@ -1,27 +1,32 @@
 package com.upao.induct3d.backend.controller;
 
+import com.upao.induct3d.backend.domain.MessageDTO;
 import com.upao.induct3d.backend.domain.request.CreateTourRequest;
 import com.upao.induct3d.backend.domain.request.UpdateTourRequest;
 import com.upao.induct3d.backend.domain.response.TourResponse;
 import com.upao.induct3d.backend.entity.Tour;
 import com.upao.induct3d.backend.exception.AttributeException;
 import com.upao.induct3d.backend.exception.ResourceNotFoundException;
+import com.upao.induct3d.backend.repository.TourRepository;
 import com.upao.induct3d.backend.repository.UserRepository;
 import com.upao.induct3d.backend.service.TourService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tours")
 public class TourController {
 
     @Autowired private TourService tourService;
+    @Autowired private TourRepository tourRepository;
     @Autowired private UserRepository userRepository;
 
     private ObjectId getCurrentUserId() {
@@ -76,4 +81,17 @@ public class TourController {
         TourResponse updated = tourService.updateTour(tourId, request, userId);
         return ResponseEntity.ok(updated);
     }
+
+    // Delete tour
+    @DeleteMapping("/{tourId}")
+    public ResponseEntity<MessageDTO> deleteTour(@PathVariable String tourId) throws ResourceNotFoundException {
+        Optional<Tour> optionalTour = tourRepository.findById(tourId);
+        if (optionalTour.isEmpty()) {
+            throw new ResourceNotFoundException("Tour no encontrado con ID: " + tourId);
+        }
+
+        tourRepository.deleteById(tourId);
+        return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "Tour eliminado correctamente"));
+    }
+
 }

@@ -33,6 +33,7 @@ public class TemplateController {
                 .getId();
     }
 
+    // Create template
     @PostMapping("/upload")
     public ResponseEntity<Template> uploadTemplate(
             @RequestParam String name,
@@ -47,6 +48,7 @@ public class TemplateController {
         return ResponseEntity.ok(saved);
     }
 
+    // Get all template from creator
     @GetMapping("/my")
     public ResponseEntity<List<Template>> getMyTemplates() {
         ObjectId userId = getCurrentUserId();
@@ -54,12 +56,14 @@ public class TemplateController {
         return ResponseEntity.ok(templates);
     }
 
+    // Get all templates from everyone
     @GetMapping
     public ResponseEntity<List<Template>> getTemplates() {
         List<Template> templates = templateService.getTemplates();
         return ResponseEntity.ok(templates);
     }
 
+    // Get url from GLB model
     @GetMapping("/glb/{templateId}")
     public ResponseEntity<String> getGlbUrl(@PathVariable String templateId) {
         return templateService.getGlbUrlByTemplateId(templateId)
@@ -67,25 +71,11 @@ public class TemplateController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Get template by ID
     @GetMapping("/{templateId}")
     public ResponseEntity<Template> getTemplateById(@PathVariable String templateId) throws ResourceNotFoundException {
         Template template = templateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Template no encontrado"));
         return ResponseEntity.ok(template);
-    }
-
-    @DeleteMapping("/{templateId}")
-    public ResponseEntity<MessageDTO> deleteTemplate(@PathVariable String templateId) throws ResourceNotFoundException, AttributeException {
-        ObjectId currentUserId = getCurrentUserId();
-
-        Template template = templateRepository.findById(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException("Template no encontrado"));
-
-        if (!template.getUserId().equals(currentUserId)) {
-            throw new AttributeException("No tienes permisos para eliminar este template");
-        }
-
-        templateRepository.deleteById(templateId);
-        return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "Template eliminado con éxito"));
     }
 }

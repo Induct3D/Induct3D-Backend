@@ -19,8 +19,7 @@ public class Template {
     private Vector3 userStart;
     private List<PredefinedStep> predefinedSteps;
 
-    public Template() {
-    }
+    public Template() {}
 
     public Template(String name, String description, List<String> images, String glbUrl, ObjectId userId) {
         this.name = name;

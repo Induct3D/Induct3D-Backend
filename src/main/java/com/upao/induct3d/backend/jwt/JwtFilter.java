@@ -15,7 +15,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
 import java.io.IOException;
 
 @Component
@@ -23,11 +22,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
-    @Autowired
-    JwtProvider jwtProvider;
-
-    @Autowired
-    UserDetailsServiceImpl userDetailsServiceImpl;
+    @Autowired JwtProvider jwtProvider;
+    @Autowired UserDetailsServiceImpl userDetailsServiceImpl;
 
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         String token = getToken(request);

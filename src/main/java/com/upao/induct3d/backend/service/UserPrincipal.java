@@ -33,43 +33,16 @@ public class UserPrincipal implements UserDetails {
         );
     }
 
-    @Override public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
-    }
+    @Override public Collection<? extends GrantedAuthority> getAuthorities() {return Collections.emptyList();}
+    @Override public String getPassword() {return password;}
+    @Override public String getUsername() {return username;}
 
-    @Override public String getPassword() {
-        return password;
-    }
+    public String getEmail() {return email;}
+    public String getName() {return name;}
+    public String getSurname() {return surname;}
 
-    @Override public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    @Override public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override public boolean isEnabled() {
-        return true;
-    }
+    @Override public boolean isAccountNonExpired() {return true;}
+    @Override public boolean isAccountNonLocked() {return true;}
+    @Override public boolean isCredentialsNonExpired() {return true;}
+    @Override public boolean isEnabled() {return true;}
 }

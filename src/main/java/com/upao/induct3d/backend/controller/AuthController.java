@@ -20,8 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 public class AuthController {
 
-    @Autowired
-    UserService userService;
+    @Autowired UserService userService;
 
     // Create user
     @PostMapping("/create")

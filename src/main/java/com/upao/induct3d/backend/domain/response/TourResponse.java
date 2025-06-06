@@ -1,6 +1,5 @@
 package com.upao.induct3d.backend.domain.response;
 
-import com.upao.induct3d.backend.entity.Template;
 import com.upao.induct3d.backend.entity.Tour;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ public class TourResponse {
         public double getX() { return x; }
         public double getY() { return y; }
         public double getZ() { return z; }
+
         public void setX(double x) { this.x = x; }
         public void setY(double y) { this.y = y; }
         public void setZ(double z) { this.z = z; }
@@ -85,6 +85,7 @@ public class TourResponse {
     }
 
     public TourResponse() {}
+
     public TourResponse(String tourId, String tourName, String description, Map<String, String> materialColors, String glbUrl, List<Tour.Step> steps, Vector3 userStart, List<PredefinedStep> predefinedSteps) {
         this.tourId = tourId;
         this.tourName = tourName;

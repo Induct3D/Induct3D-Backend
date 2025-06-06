@@ -14,9 +14,9 @@ import java.util.Map;
 @RequestMapping("/api/pictures")
 public class PictureController {
 
-    @Autowired
-    private PictureService pictureService;
+    @Autowired private PictureService pictureService;
 
+    // Upload images
     @PostMapping("/upload")
     public ResponseEntity<Map<String,String>> upload(
             @RequestParam("file") MultipartFile file
@@ -25,6 +25,7 @@ public class PictureController {
         return ResponseEntity.ok(Collections.singletonMap("url", url));
     }
 
+    // Delete image by ID
     @DeleteMapping("/{publicId}")
     public ResponseEntity<?> delete(@PathVariable String publicId) throws IOException {
         pictureService.deleteByPublicId(publicId);
