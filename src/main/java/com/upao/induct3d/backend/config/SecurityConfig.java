@@ -22,6 +22,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -45,7 +47,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("https://induct3d.netlify.app/"); // tu frontend
+        configuration.setAllowedOrigins(Arrays.asList(
+                "https://induct3d.netlify.app/",
+                "https://induct3d.tech/"
+        ));
         configuration.addAllowedMethod("*"); // GET, POST, etc.
         configuration.addAllowedHeader("*"); // Authorization, Content-Type, etc.
         configuration.setAllowCredentials(true); // permite cookies/autenticación
