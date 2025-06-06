@@ -29,6 +29,11 @@ public class TourService {
         return tourRepository.save(tour);
     }
 
+    // Get all tours
+    public List<Tour> getAllTours() {
+        return tourRepository.findAll();
+    }
+
     // Get tours for User
     public List<Tour> getToursByUser(ObjectId userId) {
         return tourRepository.findByUserId(userId);
@@ -80,13 +85,29 @@ public class TourService {
 
         List<TourResponse.PredefinedStep> predefinedSteps = tpl.getPredefinedSteps()
                 .stream()
-                .map(ps -> new TourResponse.PredefinedStep(
-                        ps.getId(),
-                        ps.getPosition().stream()
-                                .map(v -> new TourResponse.Vector3(v.getX(), v.getY(), v.getZ()))
-                                .collect(Collectors.toList()),
-                        ps.isHasBoard()
-                ))
+                .map(ps -> {
+                    List<TourResponse.Vector3> stepPositions = ps.getPosition().stream()
+                            .map(v -> new TourResponse.Vector3(v.getX(), v.getY(), v.getZ()))
+                            .collect(Collectors.toList());
+
+                    // boardConfig puede ser null
+                    TourResponse.BoardConfig boardConfig = null;
+                    if (ps.getBoardConfig() != null) {
+                        Template.BoardConfig bc = ps.getBoardConfig();
+                        boardConfig = new TourResponse.BoardConfig(
+                                new TourResponse.Vector3(bc.getPosition().getX(), bc.getPosition().getY(), bc.getPosition().getZ()),
+                                new TourResponse.Vector3(bc.getRotation().getX(), bc.getRotation().getY(), bc.getRotation().getZ()),
+                                bc.getScale()
+                        );
+                    }
+
+                    return new TourResponse.PredefinedStep(
+                            ps.getId(),
+                            stepPositions,
+                            ps.getHasBoard(),
+                            boardConfig
+                    );
+                })
                 .collect(Collectors.toList());
 
         return new TourResponse(

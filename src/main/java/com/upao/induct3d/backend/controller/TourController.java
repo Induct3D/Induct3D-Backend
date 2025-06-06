@@ -47,6 +47,12 @@ public class TourController {
         return ResponseEntity.ok(saved);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Tour>> getAllTours() {
+        List<Tour> tours = tourService.getAllTours();
+        return ResponseEntity.ok(tours);
+    }
+
     // Get all my tours
     @GetMapping("/my")
     public ResponseEntity<List<Tour>> getMyTours() {

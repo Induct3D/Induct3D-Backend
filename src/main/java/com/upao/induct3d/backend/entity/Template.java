@@ -55,7 +55,8 @@ public class Template {
     public static class PredefinedStep {
         private String id;
         private List<Vector3> position;
-        private boolean hasBoard;
+        private Boolean hasBoard;
+        private BoardConfig boardConfig;
 
         public String getId() { return id; }
         public void setId(String id) { this.id = id; }
@@ -63,8 +64,34 @@ public class Template {
         public List<Vector3> getPosition() { return position; }
         public void setPosition(List<Vector3> position) { this.position = position; }
 
-        public boolean isHasBoard() { return hasBoard; }
-        public void setHasBoard(boolean hasBoard) { this.hasBoard = hasBoard; }
+        public Boolean getHasBoard() { return hasBoard; }
+        public void setHasBoard(Boolean hasBoard) { this.hasBoard = hasBoard; }
+
+        public BoardConfig getBoardConfig() { return boardConfig; }
+        public void setBoardConfig(BoardConfig boardConfig) { this.boardConfig = boardConfig; }
+    }
+
+    public static class BoardConfig {
+        private Vector3 position;
+        private Vector3 rotation;
+        private double scale;
+
+        public BoardConfig() {}
+
+        public BoardConfig(Vector3 position, Vector3 rotation, double scale) {
+            this.position = position;
+            this.rotation = rotation;
+            this.scale = scale;
+        }
+
+        public Vector3 getPosition() { return position; }
+        public void setPosition(Vector3 position) { this.position = position; }
+
+        public Vector3 getRotation() { return rotation; }
+        public void setRotation(Vector3 rotation) { this.rotation = rotation; }
+
+        public double getScale() { return scale; }
+        public void setScale(double scale) { this.scale = scale; }
     }
 
     // GETTERS

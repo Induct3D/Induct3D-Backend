@@ -39,23 +39,49 @@ public class TourResponse {
     public static class PredefinedStep {
         private String id;
         private List<Vector3> position;
-        private boolean hasBoard;
+        private Boolean hasBoard;
+        private BoardConfig boardConfig;
 
         public PredefinedStep() {}
 
-        public PredefinedStep(String id, List<Vector3> position, boolean hasBoard) {
+        public PredefinedStep(String id, List<Vector3> position, Boolean hasBoard, BoardConfig boardConfig) {
             this.id = id;
             this.position = position;
             this.hasBoard = hasBoard;
+            this.boardConfig = boardConfig;
         }
 
         public String getId() { return id; }
         public List<Vector3> getPosition() { return position; }
-        public boolean isHasBoard() { return hasBoard; }
+        public Boolean getHasBoard() { return hasBoard; }
+        public BoardConfig getBoardConfig() { return boardConfig; }
 
         public void setId(String id) { this.id = id; }
         public void setPosition(List<Vector3> position) { this.position = position; }
-        public void setHasBoard(boolean hasBoard) { this.hasBoard = hasBoard; }
+        public void setHasBoard(Boolean hasBoard) { this.hasBoard = hasBoard;}
+        public void setBoardConfig(BoardConfig boardConfig) { this.boardConfig = boardConfig; }
+    }
+
+    public static class BoardConfig {
+        private Vector3 position;
+        private Vector3 rotation;
+        private double scale;
+
+        public BoardConfig() {}
+
+        public BoardConfig(Vector3 position, Vector3 rotation, double scale) {
+            this.position = position;
+            this.rotation = rotation;
+            this.scale = scale;
+        }
+
+        public Vector3 getPosition() { return position; }
+        public Vector3 getRotation() { return rotation; }
+        public double getScale() { return scale; }
+
+        public void setPosition(Vector3 position) { this.position = position; }
+        public void setRotation(Vector3 rotation) { this.rotation = rotation; }
+        public void setScale(double scale) { this.scale = scale; }
     }
 
     public TourResponse() {}
