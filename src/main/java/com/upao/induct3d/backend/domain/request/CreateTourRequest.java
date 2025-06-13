@@ -10,21 +10,21 @@ public class CreateTourRequest {
     private String description;
     private String voiceText;
     private Map<String, String> materialColors;
-    private List<Tour.Step> steps;
+    private List<Step> steps;
 
     public String getTemplateId() {return templateId;}
     public String getTourName() {return tourName;}
     public String getDescription() {return description;}
     public String getVoiceText() {return voiceText;}
     public Map<String, String> getMaterialColors() {return materialColors;}
-    public List<Tour.Step> getSteps() {return steps;}
+    public List<Step> getSteps() {return steps;}
 
     public void setTemplateId(String templateId) {this.templateId = templateId;}
     public void setTourName(String tourName) {this.tourName = tourName;}
     public void setDescription(String description) {this.description = description;}
     public void setVoiceText(String voiceText) {this.voiceText = voiceText;}
     public void setMaterialColors(Map<String, String> materialColors) {this.materialColors = materialColors;}
-    public void setSteps(List<Tour.Step> steps) {this.steps = steps;}
+    public void setSteps(List<Step> steps) {this.steps = steps;}
 
     public static class MaterialChangeDTO {
         private String name;

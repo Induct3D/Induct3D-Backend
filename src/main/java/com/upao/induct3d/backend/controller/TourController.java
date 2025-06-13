@@ -30,7 +30,7 @@ public class TourController {
     @Autowired private UserRepository userRepository;
 
     private ObjectId getCurrentUserId() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsernameOrEmail(username, username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"))
                 .getId();
@@ -46,10 +46,28 @@ public class TourController {
         tour.setTourName(request.getTourName());
         tour.setDescription(request.getDescription());
         tour.setMaterialColors(request.getMaterialColors());
-        tour.setSteps(request.getSteps());
+        tour.setSteps(mapSteps(request.getSteps()));
 
         Tour saved = tourService.createTour(tour, userId);
         return ResponseEntity.ok(saved);
+    }
+
+    private List<Tour.Step> mapSteps(List<CreateTourRequest.Step> dtoSteps) {
+        if (dtoSteps == null) return List.of();
+
+        return dtoSteps.stream().map(dto -> {
+            Tour.Step step = new Tour.Step();
+            step.setStepId(dto.getStepId());
+            step.setMessages(dto.getMessages());
+
+            if (dto.getBoardMedia() != null) {
+                Tour.BoardMedia media = new Tour.BoardMedia();
+                media.setHtml(dto.getBoardMedia().getHtml());
+                step.setBoardMedia(media);
+            }
+
+            return step;
+        }).toList();
     }
 
     @GetMapping
