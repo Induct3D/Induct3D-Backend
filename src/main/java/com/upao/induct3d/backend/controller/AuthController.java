@@ -43,6 +43,17 @@ public class AuthController {
         return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "Código enviado a tu correo"));
     }
 
+    // Validate verification code
+    @GetMapping("/validate-code/{email}/{code}")
+    public ResponseEntity<MessageDTO> validateCode(@PathVariable String email, @PathVariable String code) {
+        boolean isValid = userService.validateResetCode(email, code);
+        if (isValid) {
+            return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "Código válido"));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageDTO(HttpStatus.BAD_REQUEST, "Código inválido"));
+        }
+    }
+
     // Reset password
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO dto) {

@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Random;
 
-
 @Service
 public class UserService {
 
@@ -76,11 +75,18 @@ public class UserService {
         resetPasswordRepository.deleteByEmail(email); // Limpia códigos anteriores
         resetPasswordRepository.save(new ResetPassword(email, code, expiration));
 
-        emailService.sendEmail(
-                new String[]{email},
-                "Código de recuperación",
-                code
-        );
+        emailService.sendEmail(new String[]{email}, "Código de recuperación", code);
+    }
+
+    // Validate reset code
+    public boolean validateResetCode(String email, String code) {
+        ResetPassword token = resetPasswordRepository.findByEmailAndCode(email, code)
+                .orElse(null);
+
+        if (token == null || token.getExpiration().isBefore(LocalDateTime.now())) {
+            return false; // Código inválido o expirado
+        }
+        return true; // Código válido
     }
 
     // Reset password
