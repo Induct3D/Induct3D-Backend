@@ -9,6 +9,7 @@ import com.upao.induct3d.backend.domain.response.ResetPasswordDTO;
 import com.upao.induct3d.backend.entity.User;
 import com.upao.induct3d.backend.exception.AttributeException;
 import com.upao.induct3d.backend.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class AuthController {
 
     // Create user
     @PostMapping("/create")
+    @Operation(summary = "Create a new user", description = "Creates a new user in the system and returns a success message.")
     public ResponseEntity<MessageDTO> create(@Valid @RequestBody UserDTO dto) throws AttributeException {
         User user = userService.create(dto);
         return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "user " + user.getUsername() + " have been created"));
@@ -31,6 +33,7 @@ public class AuthController {
 
     // Login
     @PostMapping("/login")
+    @Operation(summary = "User login", description = "Authenticates a user and returns a JWT token.")
     public ResponseEntity<JwtTokenDTO> login(@Valid @RequestBody LoginUserDTO dto) throws AttributeException {
         JwtTokenDTO jwtTokenDTO = userService.login(dto);
         return ResponseEntity.ok(jwtTokenDTO);
@@ -38,6 +41,7 @@ public class AuthController {
 
     // Request reset password
     @PostMapping("/reset-request")
+    @Operation(summary = "Request password reset", description = "Sends a password reset code to the user's email.")
     public ResponseEntity<?> requestReset(@RequestBody ResetRequestDTO dto) {
         userService.requestPasswordReset(dto.getEmail());
         return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "Código enviado a tu correo"));
@@ -45,6 +49,7 @@ public class AuthController {
 
     // Validate verification code
     @GetMapping("/validate-code/{email}/{code}")
+    @Operation(summary = "Validate reset code", description = "Validates the password reset code for the given email.")
     public ResponseEntity<MessageDTO> validateCode(@PathVariable String email, @PathVariable String code) {
         boolean isValid = userService.validateResetCode(email, code);
         if (isValid) {
@@ -56,6 +61,7 @@ public class AuthController {
 
     // Reset password
     @PostMapping("/reset-password")
+    @Operation(summary = "Reset password", description = "Resets the user's password using the provided reset code.")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO dto) {
         userService.resetPassword(dto.getEmail(), dto.getCode(), dto.getNewPassword());
         return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "Contraseña actualizada correctamente"));

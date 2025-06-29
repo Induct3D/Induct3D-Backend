@@ -10,6 +10,7 @@ import com.upao.induct3d.backend.exception.ResourceNotFoundException;
 import com.upao.induct3d.backend.repository.TourRepository;
 import com.upao.induct3d.backend.repository.UserRepository;
 import com.upao.induct3d.backend.service.TourService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,7 @@ public class TourController {
 
     // Create tour
     @PostMapping("/create")
+    @Operation(summary = "Create a tour", description = "Creates a new tour with steps and material colors.")
     public ResponseEntity<Tour> createTour(@RequestBody CreateTourRequest request) {
         ObjectId userId = getCurrentUserId();
 
@@ -71,6 +73,7 @@ public class TourController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all tours", description = "Retrieves all tours available in the system.")
     public ResponseEntity<List<Tour>> getAllTours() {
         List<Tour> tours = tourService.getAllTours();
         return ResponseEntity.ok(tours);
@@ -78,6 +81,7 @@ public class TourController {
 
     // Get all my tours
     @GetMapping("/my")
+    @Operation(summary = "Get user's tours", description = "Retrieves all tours created by the authenticated user.")
     public ResponseEntity<List<Tour>> getMyTours() {
         ObjectId userId = getCurrentUserId();
         return ResponseEntity.ok(tourService.getToursByUser(userId));
@@ -85,6 +89,7 @@ public class TourController {
 
     // Get a tour of ID
     @GetMapping("/{tourId}")
+    @Operation(summary = "Get tour by ID", description = "Retrieves the details of a tour by its ID.")
     public ResponseEntity<TourResponse> getTourById(@PathVariable String tourId) throws ResourceNotFoundException {
         return tourService.getTourById(tourId)
                 .map(ResponseEntity::ok)
@@ -93,6 +98,7 @@ public class TourController {
 
     // Update the tour of ID
     @PutMapping("/{tourId}")
+    @Operation(summary = "Update a tour", description = "Updates the details of a tour by its ID.")
     public ResponseEntity<TourResponse> updateTour(@PathVariable String tourId, @RequestBody UpdateTourRequest request)
             throws ResourceNotFoundException, AttributeException {
         ObjectId userId = getCurrentUserId();
@@ -102,6 +108,7 @@ public class TourController {
 
     // Delete tour
     @DeleteMapping("/{tourId}")
+    @Operation(summary = "Delete a tour", description = "Deletes a tour by its ID.")
     public ResponseEntity<MessageDTO> deleteTour(@PathVariable String tourId) throws ResourceNotFoundException {
         Optional<Tour> optionalTour = tourRepository.findById(tourId);
         if (optionalTour.isEmpty()) {

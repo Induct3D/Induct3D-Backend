@@ -1,6 +1,7 @@
 package com.upao.induct3d.backend.controller;
 
 import com.upao.induct3d.backend.service.PictureService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ public class PictureController {
 
     // Upload images
     @PostMapping("/upload")
+    @Operation(summary = "Upload a picture", description = "Uploads a picture and returns its URL.")
     public ResponseEntity<Map<String,String>> upload(
             @RequestParam("file") MultipartFile file
     ) throws IOException {
@@ -27,6 +29,7 @@ public class PictureController {
 
     // Delete image by ID
     @DeleteMapping("/{publicId}")
+    @Operation(summary = "Delete a picture", description = "Deletes a picture by its public ID.")
     public ResponseEntity<?> delete(@PathVariable String publicId) throws IOException {
         pictureService.deleteByPublicId(publicId);
         return ResponseEntity.noContent().build();
