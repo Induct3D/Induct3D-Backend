@@ -77,6 +77,15 @@ public class TourService {
         return buildTourResponse(saved, tpl);
     }
 
+    // Deactivate tours by User
+    public void deactivateToursByUser(ObjectId userId) {
+        List<Tour> userTours = tourRepository.findByUserId(userId);
+        for (Tour tour : userTours) {
+            tour.setStatus(TourStatus.INACTIVE);
+            tourRepository.save(tour);
+        }
+    }
+
     // Get tour for Template
     public List<Tour> getToursByTemplate(ObjectId templateId) {
         return tourRepository.findByTemplateId(templateId);

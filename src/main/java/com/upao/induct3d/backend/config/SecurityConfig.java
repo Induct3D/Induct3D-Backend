@@ -87,7 +87,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/templates/{templateId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/templates/glb/{templateId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tours/{tourId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/tours").permitAll()
                         //.requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/user/**").authenticated()
                         .requestMatchers("/api/tours/**").hasAnyRole("CREATOR", "ADMIN")
                         .requestMatchers("/api/templates/**").hasAnyRole("CREATOR", "ADMIN")
                         .requestMatchers(

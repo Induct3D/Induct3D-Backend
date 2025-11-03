@@ -2,6 +2,7 @@ package com.upao.induct3d.backend.service;
 
 import com.upao.induct3d.backend.domain.JwtTokenDTO;
 import com.upao.induct3d.backend.domain.LoginUserDTO;
+import com.upao.induct3d.backend.domain.UpdateUserDTO;
 import com.upao.induct3d.backend.domain.UserDTO;
 import com.upao.induct3d.backend.entity.ResetPassword;
 import com.upao.induct3d.backend.entity.User;
@@ -25,18 +26,24 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final TourService tourService;
     private final JwtProvider jwtProvider;
     private final AuthenticationManager authenticationManager;
     private final ResetPasswordRepository resetPasswordRepository;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider, AuthenticationManager authenticationManager, EmailService emailService, ResetPasswordRepository resetPasswordRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider, AuthenticationManager authenticationManager, EmailService emailService, TourService tourService ,ResetPasswordRepository resetPasswordRepository, UserDetailsServiceImpl userDetailsServiceImpl) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
         this.authenticationManager = authenticationManager;
         this.emailService = emailService;
+        this.tourService = tourService;
         this.resetPasswordRepository = resetPasswordRepository;
+        this.userDetailsServiceImpl = userDetailsServiceImpl;
     }
+
+    ///////////////---------- ACTIONS USER -----------/////////////////////
 
     // Create user
     public User create(UserDTO dto) throws AttributeException {
@@ -53,6 +60,46 @@ public class UserService {
         user.setSurname(dto.getSurname());
         return userRepository.save(user);
     }
+
+    // Get user profile
+    public UserDTO getUserProfile(String username) {
+        User user = userRepository.findByUsernameOrEmail(username, username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!user.isActive()) {
+            throw new RuntimeException("Usuario inactivo");
+        }
+
+        return new UserDTO(user);
+    }
+
+    // Update user profile
+    public UserDTO updateUserProfile(String username, UpdateUserDTO dto) throws AttributeException {
+        User user = userRepository.findByUsernameOrEmail(username, username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!user.isActive()) {
+            throw new RuntimeException("Usuario inactivo");
+        }
+
+        user.setName(dto.getName());
+        user.setSurname(dto.getSurname());
+
+        User updated = userRepository.save(user);
+        return new UserDTO(updated);
+    }
+
+    // Soft delete user profile
+    public void deleteUserProfile(String username) {
+        User user = userRepository.findByUsernameOrEmail(username, username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        user.setActive(false);
+        userRepository.save(user);
+        tourService.deactivateToursByUser(user.getId());
+    }
+
+    ///////////////---------- ACCOUNT USER -----------/////////////////////
 
     // Login
     public JwtTokenDTO login(LoginUserDTO dto) {
@@ -105,5 +152,19 @@ public class UserService {
         userRepository.save(user);
 
         resetPasswordRepository.deleteByEmail(email);
+    }
+
+    // Validate token
+    public boolean validateToken(String token) {
+        try {
+            if (token != null && jwtProvider.validateToken(token)) {
+                String username = jwtProvider.getUsernameFromToken(token);
+                userDetailsServiceImpl.loadUserByUsername(username);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

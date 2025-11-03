@@ -19,15 +19,19 @@ public class User {
     @Field("role")
     private UserRole role = UserRole.CREATOR;
 
+    @Field("active")
+    private boolean active = true;
+
     public User() {}
 
-    public User(ObjectId id, String username, String email, String password, String name, String surname) {
+    public User(ObjectId id, String username, String email, String password, String name, String surname, UserRole role, boolean active) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
         this.name = name;
         this.surname = surname;
+        this.active = true;
     }
 
     public ObjectId getId() {return id;}
@@ -37,6 +41,7 @@ public class User {
     public String getName() {return name;}
     public String getSurname() {return surname;}
     public UserRole getRole() {return role;}
+    public boolean isActive() { return active; }
 
     public void setId(ObjectId id) {this.id = id;}
     public void setUsername(String username) {this.username = username;}
@@ -45,4 +50,5 @@ public class User {
     public void setName(String name) {this.name = name;}
     public void setSurname(String surname) {this.surname = surname;}
     public void setRole(UserRole role) {this.role = role;}
+    public void setActive(boolean active) { this.active = active; }
 }
