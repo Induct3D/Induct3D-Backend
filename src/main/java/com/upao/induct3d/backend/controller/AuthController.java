@@ -8,6 +8,7 @@ import com.upao.induct3d.backend.domain.request.ResetRequestDTO;
 import com.upao.induct3d.backend.domain.response.ResetPasswordDTO;
 import com.upao.induct3d.backend.entity.User;
 import com.upao.induct3d.backend.exception.AttributeException;
+import com.upao.induct3d.backend.service.EmailService;
 import com.upao.induct3d.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -16,12 +17,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin
 public class AuthController {
 
     @Autowired UserService userService;
+    @Autowired private EmailService emailService;
 
     // Create user
     @PostMapping("/create")
@@ -64,6 +68,7 @@ public class AuthController {
     @Operation(summary = "Reset password", description = "Resets the user's password using the provided reset code.")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO dto) {
         userService.resetPassword(dto.getEmail(), dto.getCode(), dto.getNewPassword());
+        emailService.sendPasswordChangeNotification(dto.getEmail(), LocalDateTime.now());
         return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "Contraseña actualizada correctamente"));
     }
 }

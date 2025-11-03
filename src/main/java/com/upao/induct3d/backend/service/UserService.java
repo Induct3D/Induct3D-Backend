@@ -60,8 +60,9 @@ public class UserService {
                 new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword())
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
+        UserPrincipal userPrincipal = (UserPrincipal) auth.getPrincipal();
         String token = jwtProvider.generateToken(auth);
-        return new JwtTokenDTO(token);
+        return new JwtTokenDTO(token, userPrincipal.getRole());
     }
 
     // Request reset password

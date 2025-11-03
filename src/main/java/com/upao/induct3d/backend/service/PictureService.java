@@ -24,7 +24,11 @@ public class PictureService {
 
         Map<?,?> result = cloudinary.uploader()
                 .upload(file.getBytes(),
-                        ObjectUtils.asMap("folder", "tours"));
+                        ObjectUtils.asMap(
+                                "folder", "tours",
+                                "quality", 100, //Calidad al 100%
+                                "bytes", 10485760 //Peso máximo de la imagen a 10 MB
+                        ));
 
         String publicId = (String) result.get("public_id");
         String url      = (String) result.get("secure_url");

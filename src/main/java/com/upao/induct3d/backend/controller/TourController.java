@@ -5,6 +5,7 @@ import com.upao.induct3d.backend.domain.request.CreateTourRequest;
 import com.upao.induct3d.backend.domain.request.UpdateTourRequest;
 import com.upao.induct3d.backend.domain.response.TourResponse;
 import com.upao.induct3d.backend.entity.Tour;
+import com.upao.induct3d.backend.entity.TourStatus;
 import com.upao.induct3d.backend.exception.AttributeException;
 import com.upao.induct3d.backend.exception.ResourceNotFoundException;
 import com.upao.induct3d.backend.repository.TourRepository;
@@ -20,6 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -47,6 +49,9 @@ public class TourController {
         tour.setTemplateId(new ObjectId(request.getTemplateId()));
         tour.setTourName(request.getTourName());
         tour.setDescription(request.getDescription());
+        tour.setPassword(request.getPassword());
+        tour.setHasPassword(request.isHasPassword());
+        tour.setStatus(request.getStatus() != null ? request.getStatus() : TourStatus.PENDING);
         tour.setMaterialColors(request.getMaterialColors());
         tour.setSteps(mapSteps(request.getSteps()));
 
@@ -72,6 +77,7 @@ public class TourController {
         }).toList();
     }
 
+    // Get all tours
     @GetMapping
     @Operation(summary = "Get all tours", description = "Retrieves all tours available in the system.")
     public ResponseEntity<List<Tour>> getAllTours() {
@@ -117,6 +123,18 @@ public class TourController {
 
         tourRepository.deleteById(tourId);
         return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "Tour eliminado correctamente"));
+    }
+
+    // Reject tour
+    @PostMapping("/{tourId}/reject")
+    @Operation(summary = "Reject tour", description = "Rechaza un tour y registra motivo/fecha en el historial.")
+    public ResponseEntity<TourResponse> rejectTour(
+            @PathVariable String tourId,
+            @RequestBody Map<String, String> body
+    ) throws ResourceNotFoundException, AttributeException {
+        String reason = body.getOrDefault("reason", "");
+        TourResponse resp = tourService.rejectTour(tourId, reason);
+        return ResponseEntity.ok(resp);
     }
 
 }

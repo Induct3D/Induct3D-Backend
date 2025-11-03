@@ -8,6 +8,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class EmailService implements IEmailService {
 
@@ -35,6 +38,21 @@ public class EmailService implements IEmailService {
         }
     }
 
+    @Override
+    public void sendPasswordChangeNotification(String toUser, LocalDateTime changeDateTime) {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setFrom(emailUser);
+            helper.setTo(toUser);
+            helper.setSubject("Contraseña cambiada exitosamente");
+            helper.setText(getPasswordChangeHtml(changeDateTime), true);
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error al enviar notificación de cambio de contraseña: " + e.getMessage());
+        }
+    }
+
     private String getStyledHtml(String code) {
         return """
             <div style="font-family: 'Segoe UI', sans-serif; background-color: #ffffff; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb;">
@@ -53,5 +71,32 @@ public class EmailService implements IEmailService {
                 </p>
             </div>
         """.formatted(code);
+    }
+
+    private String getPasswordChangeHtml(LocalDateTime changeDateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy 'a las' HH:mm:ss");
+        String formattedDateTime = changeDateTime.format(formatter);
+
+        return """
+        <div style="font-family: 'Segoe UI', sans-serif; background-color: #ffffff; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <h2 style="color: #059669; margin-bottom: 12px;">Contraseña cambiada exitosamente</h2>
+            <p style="font-size: 16px; color: #111827;">Hola,</p>
+            <p style="font-size: 16px; color: #111827;">
+                Tu contraseña ha sido cambiada exitosamente el <strong>%s</strong>.
+            </p>
+            <div style="background-color: #f0fdf4; padding: 16px; border-radius: 6px; border-left: 4px solid #059669; margin: 20px 0;">
+                <p style="font-size: 14px; color: #065f46; margin: 0;">
+                    ✓ Tu cuenta está ahora protegida con la nueva contraseña
+                </p>
+            </div>
+            <p style="font-size: 14px; color: #6b7280;">
+                Si no realizaste este cambio, por favor contacta a nuestro equipo de soporte inmediatamente.
+            </p>
+            <hr style="margin-top: 24px; border: none; border-top: 1px solid #e5e7eb;" />
+            <p style="font-size: 12px; color: #9ca3af; margin-top: 12px;">
+                Induct3D · Seguridad Inteligente para tus Proyectos
+            </p>
+        </div>
+    """.formatted(formattedDateTime);
     }
 }

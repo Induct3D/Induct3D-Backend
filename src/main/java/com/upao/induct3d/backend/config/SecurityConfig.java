@@ -6,6 +6,7 @@ import com.upao.induct3d.backend.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -81,10 +82,16 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/templates").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/templates/{templateId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/templates/glb/{templateId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/tours/{tourId}").permitAll()
+                        //.requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/tours/**").hasAnyRole("CREATOR", "ADMIN")
+                        .requestMatchers("/api/templates/**").hasAnyRole("CREATOR", "ADMIN")
                         .requestMatchers(
-                                "/auth/**",
-                                "/api/**",
-                                "/swagger-ui.html",
+                                "/swagger-ui.html", 
                                 "/swagger-ui/**",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -93,7 +100,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exc -> exc.authenticationEntryPoint(jwtEntryPoint))
-                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

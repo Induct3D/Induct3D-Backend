@@ -3,6 +3,7 @@ package com.upao.induct3d.backend.entity;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "users")
 public class User {
@@ -14,6 +15,9 @@ public class User {
     private String password;
     private String name;
     private String surname;
+
+    @Field("role")
+    private UserRole role = UserRole.CREATOR;
 
     public User() {}
 
@@ -32,6 +36,7 @@ public class User {
     public String getPassword() {return password;}
     public String getName() {return name;}
     public String getSurname() {return surname;}
+    public UserRole getRole() {return role;}
 
     public void setId(ObjectId id) {this.id = id;}
     public void setUsername(String username) {this.username = username;}
@@ -39,4 +44,5 @@ public class User {
     public void setPassword(String password) {this.password = password;}
     public void setName(String name) {this.name = name;}
     public void setSurname(String surname) {this.surname = surname;}
+    public void setRole(UserRole role) {this.role = role;}
 }

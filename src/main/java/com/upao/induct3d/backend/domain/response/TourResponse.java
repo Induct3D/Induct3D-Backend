@@ -1,6 +1,9 @@
 package com.upao.induct3d.backend.domain.response;
 
 import com.upao.induct3d.backend.entity.Tour;
+import com.upao.induct3d.backend.entity.TourStatus;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -8,12 +11,35 @@ public class TourResponse {
     private String tourId;
     private String tourName;
     private String description;
+    private String password;
+    private boolean hasPassword;
+    private TourStatus status;
+    private List<ReviewNote> reviewHistory;
     private Map<String,String> materialColors;
     private String glbUrl;
     private List<Tour.Step> steps;
     private Vector3 userStart;
     private List<PredefinedStep> predefinedSteps;
 
+    // REVIEW NOTE
+    public static class ReviewNote {
+        private String rejectionReason;
+        private LocalDateTime reviewedAt;
+
+        public ReviewNote() {}
+        public ReviewNote(String rejectionReason, LocalDateTime reviewedAt) {
+            this.rejectionReason = rejectionReason;
+            this.reviewedAt = reviewedAt;
+        }
+
+        public String getRejectionReason() { return rejectionReason; }
+        public LocalDateTime getReviewedAt() { return reviewedAt; }
+
+        public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+        public void setReviewedAt(LocalDateTime reviewedAt) { this.reviewedAt = reviewedAt; }
+    }
+
+    // VECTORS
     public static class Vector3 {
         private double x;
         private double y;
@@ -36,6 +62,7 @@ public class TourResponse {
         public void setZ(double z) { this.z = z; }
     }
 
+    // PREDEFINED STEPS
     public static class PredefinedStep {
         private String id;
         private List<Vector3> position;
@@ -62,6 +89,7 @@ public class TourResponse {
         public void setBoardConfig(BoardConfig boardConfig) { this.boardConfig = boardConfig; }
     }
 
+    // BOARD CONFIG
     public static class BoardConfig {
         private Vector3 position;
         private Vector3 rotation;
@@ -85,7 +113,6 @@ public class TourResponse {
     }
 
     public TourResponse() {}
-
     public TourResponse(String tourId, String tourName, String description, Map<String, String> materialColors, String glbUrl, List<Tour.Step> steps, Vector3 userStart, List<PredefinedStep> predefinedSteps) {
         this.tourId = tourId;
         this.tourName = tourName;
@@ -101,6 +128,10 @@ public class TourResponse {
     public String getTourId() { return tourId; }
     public String getTourName() { return tourName; }
     public String getDescription() { return description; }
+    public String getPassword() { return password; }
+    public boolean isHasPassword() { return hasPassword; }
+    public TourStatus getStatus() { return status;}
+    public List<ReviewNote> getReviewHistory() { return reviewHistory; }
     public Map<String, String> getMaterialColors() { return materialColors; }
     public String getGlbUrl() { return glbUrl; }
     public List<Tour.Step> getSteps() { return steps; }
@@ -111,6 +142,10 @@ public class TourResponse {
     public void setTourId(String tourId) { this.tourId = tourId; }
     public void setTourName(String tourName) { this.tourName = tourName; }
     public void setDescription(String description) { this.description = description; }
+    public void setPassword(String password) { this.password = password; }
+    public void setHasPassword(boolean hasPassword) { this.hasPassword = hasPassword; }
+    public void setStatus(TourStatus status) { this.status = status; }
+    public void setReviewHistory(List<ReviewNote> reviewHistory) { this.reviewHistory = reviewHistory; }
     public void setMaterialColors(Map<String, String> materialColors) { this.materialColors = materialColors; }
     public void setGlbUrl(String glbUrl) { this.glbUrl = glbUrl; }
     public void setSteps(List<Tour.Step> steps) { this.steps = steps; }

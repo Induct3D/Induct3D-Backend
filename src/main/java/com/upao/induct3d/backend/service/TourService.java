@@ -4,6 +4,7 @@ import com.upao.induct3d.backend.domain.request.UpdateTourRequest;
 import com.upao.induct3d.backend.domain.response.TourResponse;
 import com.upao.induct3d.backend.entity.Template;
 import com.upao.induct3d.backend.entity.Tour;
+import com.upao.induct3d.backend.entity.TourStatus;
 import com.upao.induct3d.backend.exception.AttributeException;
 import com.upao.induct3d.backend.exception.ResourceNotFoundException;
 import com.upao.induct3d.backend.repository.TemplateRepository;
@@ -12,6 +13,8 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,6 +28,7 @@ public class TourService {
     // Create tour
     public Tour createTour(Tour tour, ObjectId userId) {
         tour.setUserId(userId);
+        if (tour.getStatus() == null) tour.setStatus(TourStatus.PENDING);
         return tourRepository.save(tour);
     }
 
@@ -62,6 +66,9 @@ public class TourService {
 
         existing.setTourName(req.getTourName());
         existing.setDescription(req.getDescription());
+        existing.setPassword(req.getPassword());
+        existing.setHasPassword(req.isHasPassword());
+        existing.setStatus(req.getStatus());
         existing.setMaterialColors(req.getMaterialColors());
         existing.setSteps(req.getSteps());
 
@@ -75,6 +82,7 @@ public class TourService {
         return tourRepository.findByTemplateId(templateId);
     }
 
+    // TourResponse builder
     private TourResponse buildTourResponse(Tour tour, Template tpl) {
         TourResponse.Vector3 userStart = new TourResponse.Vector3(
                 tpl.getUserStart().getX(),
@@ -109,17 +117,51 @@ public class TourService {
                 })
                 .collect(Collectors.toList());
 
-        return new TourResponse(
-                tour.getTourId(),
-                tour.getTourName(),
-                tour.getDescription(),
-                tour.getMaterialColors(),
-                tpl.getGlbUrl(),
-                tour.getSteps(),
-                userStart,
-                predefinedSteps
-        );
+        TourResponse resp = new TourResponse();
+        resp.setTourId(tour.getTourId());
+        resp.setTourName(tour.getTourName());
+        resp.setDescription(tour.getDescription());
+        resp.setHasPassword(tour.isHasPassword());
+        resp.setStatus(tour.getStatus());
+        resp.setReviewHistory(mapReviewNotes(tour.getReviewHistory()));
+        resp.setMaterialColors(tour.getMaterialColors());
+        resp.setGlbUrl(tpl.getGlbUrl());
+        resp.setSteps(tour.getSteps());
+        resp.setUserStart(userStart);
+        resp.setPredefinedSteps(predefinedSteps);
+
+        return resp;
     }
 
+    private List<TourResponse.ReviewNote> mapReviewNotes(List<Tour.ReviewNote> src) {
+        if (src == null) return List.of();
+        return src.stream()
+                .map(n -> new TourResponse.ReviewNote(n.getRejectionReason(), n.getReviewedAt()))
+                .toList();
+    }
+
+    // Reject tour
+    public TourResponse rejectTour(String tourId, String reason) throws ResourceNotFoundException, AttributeException {
+        if (reason == null || reason.isBlank()) {
+            throw new AttributeException("El motivo de rechazo es obligatorio");
+        }
+
+        Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new ResourceNotFoundException("Tour no encontrado"));
+        tour.setStatus(TourStatus.REJECTED);
+
+        if (tour.getReviewHistory() == null) {
+            tour.setReviewHistory(new ArrayList<>());
+        }
+
+        tour.getReviewHistory().add(new Tour.ReviewNote(reason, LocalDateTime.now()));
+
+        Tour saved = tourRepository.save(tour);
+        Template tpl = templateRepository.findById(saved.getTemplateId().toHexString()).orElseThrow(() -> new ResourceNotFoundException("Template no existe"));
+        TourResponse resp = buildTourResponse(saved, tpl);
+
+        resp.setHasPassword(saved.isHasPassword());
+        resp.setStatus(saved.getStatus());
+        return resp;
+    }
 }
 
