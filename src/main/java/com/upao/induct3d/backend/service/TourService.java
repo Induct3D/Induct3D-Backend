@@ -11,6 +11,7 @@ import com.upao.induct3d.backend.repository.TemplateRepository;
 import com.upao.induct3d.backend.repository.TourRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,12 +35,12 @@ public class TourService {
 
     // Get all tours
     public List<Tour> getAllTours() {
-        return tourRepository.findAll();
+        return tourRepository.findAll(Sort.by(Sort.Direction.DESC, "tourId"));
     }
 
     // Get tours for User
     public List<Tour> getToursByUser(ObjectId userId) {
-        return tourRepository.findByUserId(userId);
+        return tourRepository.findByUserId(userId, Sort.by(Sort.Direction.DESC, "tourId"));
     }
 
     // Get tour for TourID
