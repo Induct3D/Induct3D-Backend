@@ -157,14 +157,18 @@ public class UserService {
     // Validate token
     public boolean validateToken(String token) {
         try {
-            if (token != null && jwtProvider.validateToken(token)) {
-                String username = jwtProvider.getUsernameFromToken(token);
-                userDetailsServiceImpl.loadUserByUsername(username);
-                return true;
-            }
-            return false;
+            String username = jwtProvider.getUsernameFromToken(token);
+            var ud = userDetailsServiceImpl.loadUserByUsername(username);
+            return jwtProvider.isAccessToken(token);
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public Authentication authenticate(LoginUserDTO dto) {
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        return auth;
     }
 }

@@ -1,6 +1,7 @@
 package com.upao.induct3d.backend.jwt;
 
 import com.upao.induct3d.backend.service.UserDetailsServiceImpl;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -40,18 +42,22 @@ public class JwtFilter extends OncePerRequestFilter {
         return SWAGGER_PATHS.matches(request);
     }
 
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+
         String token = getToken(request);
-        try {
-            if(token != null && jwtProvider.validateToken(token)) {
+        if (token != null) {
+            try {
                 String username = jwtProvider.getUsernameFromToken(token);
-                UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
-        } catch (UsernameNotFoundException e) {
-            logger.error("filter blocked request");
+                var ud = userDetailsServiceImpl.loadUserByUsername(username);
+                if (jwtProvider.isAccessToken(token) &&
+                        SecurityContextHolder.getContext().getAuthentication() == null) {
+                    var auth = new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            } catch (JwtException | UsernameNotFoundException ignored) {}
         }
         chain.doFilter(request, response);
     }

@@ -7,56 +7,117 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtProvider {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtEntryPoint.class);
-    private final String secret = "secretsecretsecretsecretsecretsecretsecretsecret";
+    @Value("${app.jwt.secretBase64}")
+    private String secretBase64;
+
+    @Value("${app.jwt.access.minutes:15}")
+    private long accessMinutes;
+
+    @Value("${app.jwt.refresh.days:15}")
+    private long refreshDays;
+
+    private Key key() {
+        byte[] bytes = Decoders.BASE64.decode(secretBase64);
+        return Keys.hmacShaKeyFor(bytes);
+    }
 
     public String generateToken(Authentication authentication) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        int expiration = 36000;
+        return generateAccessToken(authentication);
+    }
+
+    public String generateAccessToken(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        String username;
+        Collection<? extends GrantedAuthority> authorities;
+
+        if (principal instanceof UserDetails ud) {
+            username = ud.getUsername();
+            authorities = ud.getAuthorities();
+        } else {
+            username = String.valueOf(principal);
+            authorities = Collections.emptyList();
+        }
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "access");
+        if (authorities != null) {
+            claims.put("roles", authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+        }
+
+        Instant now = Instant.now();
+        Date iat = Date.from(now);
+        Date exp = Date.from(now.plus(accessMinutes, ChronoUnit.MINUTES));
+
         return Jwts.builder()
-                .signWith(getKey(secret))
-                .setSubject(userPrincipal.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(new Date().getTime() + expiration * 1000L))
-                .claim("cara", "feísima")
+                .setSubject(username)
+                .addClaims(claims)
+                .setIssuedAt(iat)
+                .setExpiration(exp)
+                .signWith(key())
                 .compact();
     }
 
+    public String generateRefreshToken(String username, String jti) {
+        Instant now = Instant.now();
+        Date iat = Date.from(now);
+        Date exp = Date.from(now.plus(refreshDays, ChronoUnit.DAYS));
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setId(jti)
+                .claim("type", "refresh")
+                .setIssuedAt(iat)
+                .setExpiration(exp)
+                .signWith(key())
+                .compact();
+    }
+
+    public Claims parse(String token) {
+        return Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(token).getBody();
+    }
+
     public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(getKey(secret)).build().parseClaimsJws(token).getBody().getSubject();
+        return parse(token).getSubject();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getKey(secret)).build().parseClaimsJws(token).getBody();
+            Claims c = parse(token);
+            Date exp = c.getExpiration();
+            if (exp == null || exp.before(new Date())) return false;
+
+            Object type = c.get("type");
+            if (type != null && !"access".equals(type)) return false;
+
             return true;
         } catch (ExpiredJwtException e) {
-            logger.error("expired token");
-        } catch (UnsupportedJwtException e) {
-            logger.error("unsupported token");
-        } catch (MalformedJwtException e) {
-            logger.error("malformed token");
-        } catch (SignatureException e) {
-            logger.error("bad signature");
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            logger.error("fail token");
+            return false;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
         }
-        return false;
     }
 
-    private Key getKey(String secret){
-        byte [] secretBytes = Decoders.BASE64URL.decode(secret);
-        return Keys.hmacShaKeyFor(secretBytes);
+    public boolean isAccessToken(String token) {
+        try {
+            Object t = parse(token).get("type");
+            return "access".equals(t);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
