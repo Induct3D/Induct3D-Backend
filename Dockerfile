@@ -17,4 +17,4 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 
 # Arrancar en el puerto asignado por Heroku
-ENTRYPOINT ["java", "-jar", "app.jar", "--server.port=${PORT}"]
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT}"]
