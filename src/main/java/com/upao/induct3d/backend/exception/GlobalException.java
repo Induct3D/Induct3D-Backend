@@ -96,6 +96,12 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
+    @ExceptionHandler(DeleteNotAllowedException.class)
+    public ResponseEntity<ApiErrorResponse> handleDeleteNotAllowed(DeleteNotAllowedException e) {
+        ApiErrorResponse error = new ApiErrorResponse("DELETE_NOT_ALLOWED", "No es posible eliminar este perfil", null);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+    
     @ExceptionHandler(ForbiddenTourAccessException.class)
     public ResponseEntity<ApiErrorResponse> handleForbiddenTourAccess(ForbiddenTourAccessException e) {
         ApiErrorResponse error = new ApiErrorResponse("FORBIDDEN_TOUR_ACCESS", "No tienes permisos para modificar este tour", null);
