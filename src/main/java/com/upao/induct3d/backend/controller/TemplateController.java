@@ -81,8 +81,8 @@ public class TemplateController {
     // Get template by ID
     @GetMapping("/{templateId}")
     @Operation(summary = "Get template by ID", description = "Retrieves the details of a template by its ID.")
-    public ResponseEntity<ApiResponse<Template>> getTemplateById(@PathVariable String id) {
-        Template template = templateService.getTemplateById(id);
+    public ResponseEntity<ApiResponse<Template>> getTemplateById(@PathVariable String templateId) {
+        Template template = templateService.getTemplateById(templateId);
         return ResponseEntity.ok(new ApiResponse<>(template));
     }
 }

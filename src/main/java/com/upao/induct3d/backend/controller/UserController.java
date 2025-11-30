@@ -46,7 +46,7 @@ public class UserController {
     // Update user profile
     @PutMapping("/profile")
     @Operation(summary = "Update user profile", description = "Updates the authenticated user's profile information.")
-    public ResponseEntity<ApiResponse<UpdateUserProfileResponse>> updateProfile(@Valid @RequestBody UpdateUserProfileRequest request) {
+    public ResponseEntity<ApiResponse<UpdateUserProfileResponse>> updateProfile(@Valid @RequestBody UpdateUserProfileRequest request) throws AttributeException {
         String currentUsername = getCurrentUsername();
         UserDTO updatedProfile = userService.updateUserProfile(currentUsername, request);
         UpdateUserProfileResponse body = new UpdateUserProfileResponse("Perfil actualizado correctamente", updatedProfile);

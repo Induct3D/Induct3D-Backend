@@ -75,7 +75,7 @@ public class UserService {
     }
 
     // Update user profile
-    public UserDTO updateUserProfile(String currentUsername, UpdateUserProfileRequest request) {
+    public UserDTO updateUserProfile(String currentUsername, UpdateUserProfileRequest request) throws AttributeException {
         User user = userRepository.findByUsernameOrEmail(currentUsername, currentUsername)
                 .orElseThrow(() -> new AuthUnauthorizedException("No se ha enviado un token válido"));
 
@@ -83,8 +83,6 @@ public class UserService {
             throw new AuthUnauthorizedException("No se ha enviado un token válido");
         }
 
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
         user.setName(request.getName());
         user.setSurname(request.getSurname());
 
