@@ -126,18 +126,4 @@ public class GlobalException {
                 new ApiErrorResponse("UPLOAD_FAILED", "No se pudo subir la imagen", null)
         );
     }
-
-    @ExceptionHandler(AuthUnauthorizedException.class)
-    public ResponseEntity<ApiErrorResponse> unauthorized(AuthUnauthorizedException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                new ApiErrorResponse("AUTH_UNAUTHORIZED", "No se ha enviado un token válido", null)
-        );
-    }
-
-    @ExceptionHandler(UploadException.class)
-    public ResponseEntity<MessageDTO> uploadException(UploadException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new MessageDTO(HttpStatus.BAD_REQUEST, e.getMessage()));
-    }
-
 }
