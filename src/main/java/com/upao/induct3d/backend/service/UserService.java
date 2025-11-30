@@ -7,6 +7,8 @@ import com.upao.induct3d.backend.domain.UserDTO;
 import com.upao.induct3d.backend.entity.ResetPassword;
 import com.upao.induct3d.backend.entity.User;
 import com.upao.induct3d.backend.exception.AttributeException;
+import com.upao.induct3d.backend.exception.InvalidOrExpiredCodeException;
+import com.upao.induct3d.backend.exception.UserNotFoundException;
 import com.upao.induct3d.backend.jwt.JwtProvider;
 import com.upao.induct3d.backend.repository.ResetPasswordRepository;
 import com.upao.induct3d.backend.repository.UserRepository;
@@ -115,7 +117,7 @@ public class UserService {
     // Request reset password
     public void requestPasswordReset(String email) {
         User user = userRepository.findByUsernameOrEmail(email, email)
-                .orElseThrow(() -> new RuntimeException("Email no registrado"));
+                .orElseThrow(() -> new UserNotFoundException("No existe un usuario registrado con ese correo"));
 
         String code = String.format("%06d", new Random().nextInt(999999));
         LocalDateTime expiration = LocalDateTime.now().plusMinutes(10);
@@ -140,13 +142,14 @@ public class UserService {
     // Reset password
     public void resetPassword(String email, String code, String newPassword) {
         ResetPassword token = resetPasswordRepository.findByEmailAndCode(email, code)
-                .orElseThrow(() -> new RuntimeException("Código inválido"));
+                .orElseThrow(() -> new InvalidOrExpiredCodeException("El código para restablecer contraseña no es válido o ha expirado"));
 
-        if (token.getExpiration().isBefore(LocalDateTime.now()))
-            throw new RuntimeException("Código expirado");
+        if (token.getExpiration().isBefore(LocalDateTime.now())){
+            throw new InvalidOrExpiredCodeException("El código para restablecer contraseña no es válido o ha expirado");
+        }
 
         User user = userRepository.findByUsernameOrEmail(email, email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("No existe un usuario registrado con ese correo"));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);

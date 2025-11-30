@@ -1,11 +1,15 @@
 package com.upao.induct3d.backend.domain.request;
 
 import com.upao.induct3d.backend.entity.TourStatus;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.List;
 import java.util.Map;
 
 public class CreateTourRequest {
+    @NotBlank(message = "El templateId es obligatorio")
     private String templateId;
+    @NotBlank(message = "El nombre del tour es obligatorio")
     private String tourName;
     private String description;
     private String password;
@@ -47,6 +51,7 @@ public class CreateTourRequest {
     }
 
     public static class Step {
+        @NotBlank(message = "El stepId es obligatorio")
         private String stepId;
         private List<String> messages;
         private BoardMedia boardMedia;

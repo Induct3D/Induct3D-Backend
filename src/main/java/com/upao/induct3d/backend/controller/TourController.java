@@ -3,23 +3,28 @@ package com.upao.induct3d.backend.controller;
 import com.upao.induct3d.backend.domain.MessageDTO;
 import com.upao.induct3d.backend.domain.request.CreateTourRequest;
 import com.upao.induct3d.backend.domain.request.UpdateTourRequest;
-import com.upao.induct3d.backend.domain.response.TourResponse;
+import com.upao.induct3d.backend.domain.response.*;
 import com.upao.induct3d.backend.entity.Tour;
 import com.upao.induct3d.backend.entity.TourStatus;
 import com.upao.induct3d.backend.exception.AttributeException;
+import com.upao.induct3d.backend.exception.AuthUnauthorizedException;
 import com.upao.induct3d.backend.exception.ResourceNotFoundException;
 import com.upao.induct3d.backend.repository.TourRepository;
 import com.upao.induct3d.backend.repository.UserRepository;
 import com.upao.induct3d.backend.service.TourService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,64 +38,99 @@ public class TourController {
     @Autowired private UserRepository userRepository;
 
     private ObjectId getCurrentUserId() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AuthUnauthorizedException("No se ha enviado un token válido");
+        }
+        String username = auth.getName();
         return userRepository.findByUsernameOrEmail(username, username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"))
+                .orElseThrow(() -> new AuthUnauthorizedException("No se ha enviado un token válido"))
                 .getId();
     }
 
     // Create tour
     @PostMapping("/create")
     @Operation(summary = "Create a tour", description = "Creates a new tour with steps and material colors.")
-    public ResponseEntity<Tour> createTour(@RequestBody CreateTourRequest request) {
+    public ResponseEntity<ApiResponse<CreateTourResponse>> createTour(@Valid @RequestBody CreateTourRequest request) {
         ObjectId userId = getCurrentUserId();
+        Tour saved = tourService.createTour(request, userId);
 
-        Tour tour = new Tour();
-        tour.setTemplateId(new ObjectId(request.getTemplateId()));
-        tour.setTourName(request.getTourName());
-        tour.setDescription(request.getDescription());
-        tour.setPassword(request.getPassword());
-        tour.setHasPassword(request.isHasPassword());
-        tour.setStatus(request.getStatus() != null ? request.getStatus() : TourStatus.PENDING);
-        tour.setMaterialColors(request.getMaterialColors());
-        tour.setSteps(mapSteps(request.getSteps()));
+        CreateTourResponse body = new CreateTourResponse(
+                saved.getTourId(),
+                saved.getTourName(),
+                saved.getDescription(),
+                saved.getStatus().toString()
+        );
 
-        Tour saved = tourService.createTour(tour, userId);
-        return ResponseEntity.ok(saved);
-    }
-
-    private List<Tour.Step> mapSteps(List<CreateTourRequest.Step> dtoSteps) {
-        if (dtoSteps == null) return List.of();
-
-        return dtoSteps.stream().map(dto -> {
-            Tour.Step step = new Tour.Step();
-            step.setStepId(dto.getStepId());
-            step.setMessages(dto.getMessages());
-
-            if (dto.getBoardMedia() != null) {
-                Tour.BoardMedia media = new Tour.BoardMedia();
-                media.setHtml(dto.getBoardMedia().getHtml());
-                step.setBoardMedia(media);
-            }
-
-            return step;
-        }).toList();
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new ApiResponse<>(body));
     }
 
     // Get all tours
     @GetMapping
     @Operation(summary = "Get all tours", description = "Retrieves all tours available in the system.")
-    public ResponseEntity<List<Tour>> getAllTours() {
-        List<Tour> tours = tourService.getAllTours();
-        return ResponseEntity.ok(tours);
+    public ResponseEntity<ApiResponse<List<TourListItemResponse>>> getAllTours(@RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "limit", required = false) Integer ignoredLimit) {
+        final int limit = 9;
+        Page<Tour> pageResult = tourService.getAllTours(page, limit);
+
+        List<TourListItemResponse> items = pageResult.getContent().stream()
+                .map(t -> new TourListItemResponse(
+                        t.getTourId(),
+                        t.getTourName(),
+                        t.getDescription()
+                ))
+                .toList();
+
+        long totalItems = pageResult.getTotalElements();
+        int totalPages = pageResult.getTotalPages();
+
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("page", page);
+        meta.put("limit", limit);
+        meta.put("totalItems", totalItems);
+        meta.put("totalPages", totalPages);
+        meta.put("hasNextPage", page < totalPages);
+        meta.put("hasPrevPage", page > 1);
+
+        ApiResponse<List<TourListItemResponse>> response = new ApiResponse<>(items, meta);
+        return ResponseEntity.ok(response);
     }
 
     // Get all my tours
     @GetMapping("/my")
     @Operation(summary = "Get user's tours", description = "Retrieves all tours created by the authenticated user.")
-    public ResponseEntity<List<Tour>> getMyTours() {
-        ObjectId userId = getCurrentUserId();
-        return ResponseEntity.ok(tourService.getToursByUser(userId));
+    public ResponseEntity<ApiResponse<List<TourListItemResponse>>> getMyTours(@RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "limit", required = false) Integer ignoredLimit, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AuthUnauthorizedException("No se ha enviado un token válido");
+        }
+
+        ObjectId currentUserId = getCurrentUserId();
+        final int limit = 9;
+        Page<Tour> pageResult = tourService.getToursByUserPaginated(currentUserId, page, limit);
+        List<TourListItemResponse> items = pageResult.getContent().stream()
+                .map(t -> new TourListItemResponse(
+                        t.getTourId(),
+                        t.getTourName(),
+                        t.getDescription()
+                ))
+                .toList();
+
+        long totalItems = pageResult.getTotalElements();
+        int totalPages = pageResult.getTotalPages();
+
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("page", page);
+        meta.put("limit", limit);
+        meta.put("totalItems", totalItems);
+        meta.put("totalPages", totalPages);
+        meta.put("hasNextPage", page < totalPages);
+        meta.put("hasPrevPage", page > 1);
+
+        ApiResponse<List<TourListItemResponse>> response = new ApiResponse<>(items, meta);
+        return ResponseEntity.ok(response);
     }
 
     // Get a tour of ID
@@ -105,24 +145,21 @@ public class TourController {
     // Update the tour of ID
     @PutMapping("/{tourId}")
     @Operation(summary = "Update a tour", description = "Updates the details of a tour by its ID.")
-    public ResponseEntity<TourResponse> updateTour(@PathVariable String tourId, @RequestBody UpdateTourRequest request)
-            throws ResourceNotFoundException, AttributeException {
-        ObjectId userId = getCurrentUserId();
-        TourResponse updated = tourService.updateTour(tourId, request, userId);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<ApiResponse<UpdateTourResponse>> updateTour(@PathVariable String tourId, @Valid @RequestBody UpdateTourRequest request) {
+        ObjectId currentUserId = getCurrentUserId();
+        tourService.updateTour(tourId, request, currentUserId);
+        UpdateTourResponse body = new UpdateTourResponse(tourId, "Tour actualizado correctamente");
+        return ResponseEntity.ok(new ApiResponse<>(body));
     }
 
     // Delete tour
     @DeleteMapping("/{tourId}")
     @Operation(summary = "Delete a tour", description = "Deletes a tour by its ID.")
-    public ResponseEntity<MessageDTO> deleteTour(@PathVariable String tourId) throws ResourceNotFoundException {
-        Optional<Tour> optionalTour = tourRepository.findById(tourId);
-        if (optionalTour.isEmpty()) {
-            throw new ResourceNotFoundException("Tour no encontrado con ID: " + tourId);
-        }
-
-        tourRepository.deleteById(tourId);
-        return ResponseEntity.ok(new MessageDTO(HttpStatus.OK, "Tour eliminado correctamente"));
+    public ResponseEntity<ApiResponse<Map<String, String>>> deleteTour(@PathVariable String tourId) {
+        ObjectId currentUserId = getCurrentUserId();
+        tourService.deleteTour(tourId, currentUserId);
+        Map<String, String> body = Map.of("message", "Tour eliminado correctamente");
+        return ResponseEntity.ok(new ApiResponse<>(body));
     }
 
     // Reject tour

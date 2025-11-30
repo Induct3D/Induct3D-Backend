@@ -5,8 +5,10 @@ import com.cloudinary.utils.ObjectUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.upao.induct3d.backend.domain.response.TemplateResponse;
 import com.upao.induct3d.backend.entity.Template;
-import org.springframework.beans.factory.annotation.Value;
+import com.upao.induct3d.backend.exception.TemplateNotFoundException;
+import com.upao.induct3d.backend.exception.TemplatesNotFoundException;
 import com.upao.induct3d.backend.exception.UploadException;
 import com.upao.induct3d.backend.repository.TemplateRepository;
 import org.bson.types.ObjectId;
@@ -20,7 +22,7 @@ import java.util.*;
 @Service
 public class TemplateService {
 
-    @Autowired private TemplateRepository templateRepo;
+    @Autowired private TemplateRepository templateRepository;
     @Autowired private Cloudinary cloudinary;
 
     public Template saveTemplate(String name, String description, List<MultipartFile> images, MultipartFile glbFile, String userStartJson, String predefinedStepsJson, ObjectId userId) {
@@ -82,7 +84,7 @@ public class TemplateService {
                 throw new UploadException("Error al interpretar campos JSON: " + e.getMessage());
             }
 
-            return templateRepo.save(template);
+            return templateRepository.save(template);
 
         } catch (IOException e) {
             throw new UploadException("Error al subir archivos a Cloudinary: " + e.getMessage());
@@ -90,15 +92,28 @@ public class TemplateService {
     }
 
     public List<Template> getTemplatesByUser(ObjectId userId) {
-        return templateRepo.findByUserId(userId);
+        return templateRepository.findByUserId(userId);
     }
 
-    public List<Template> getTemplates() {
-        return templateRepo.findAll();
+    public List<TemplateResponse> getTemplates() {
+        List<Template> templates = templateRepository.findAll();
+
+        if (templates.isEmpty()) {
+            throw new TemplatesNotFoundException("No existen templates disponibles");
+        }
+
+        return templates.stream()
+                .map(TemplateResponse::fromEntity)
+                .toList();
+    }
+
+    public Template getTemplateById(String id) {
+        return templateRepository.findById(id)
+                .orElseThrow(() -> new TemplateNotFoundException("El template solicitado no existe"));
     }
 
     public Optional<String> getGlbUrlByTemplateId(String templateId) {
-        return templateRepo.findById(templateId).map(Template::getGlbUrl);
+        return templateRepository.findById(templateId).map(Template::getGlbUrl);
     }
 
     private void validateGlbFile(MultipartFile file) {
