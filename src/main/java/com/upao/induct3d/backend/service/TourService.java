@@ -216,7 +216,7 @@ public class TourService {
     }
 
     // Approve tour
-    public TourResponse approveTour(String tourId) throws ResourceNotFoundException {
+    public void approveTour(String tourId) throws ResourceNotFoundException {
         Tour tour = tourRepository.findById(tourId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tour no encontrado"));
 
@@ -228,15 +228,11 @@ public class TourService {
 
         tour.getReviewHistory().add(new Tour.ReviewNote("Tour aprobado", LocalDateTime.now()));
 
-        Tour saved = tourRepository.save(tour);
-        Template tpl = templateRepository.findById(saved.getTemplateId().toHexString())
-                .orElseThrow(() -> new ResourceNotFoundException("Template no existe"));
-
-        return buildTourResponse(saved, tpl);
+        tourRepository.save(tour);
     }
 
     // Reject tour
-    public TourResponse rejectTour(String tourId, String reason) throws ResourceNotFoundException, AttributeException {
+    public void rejectTour(String tourId, String reason) throws ResourceNotFoundException, AttributeException {
         if (reason == null || reason.isBlank()) {
             throw new AttributeException("El motivo de rechazo es obligatorio");
         }
@@ -249,14 +245,7 @@ public class TourService {
         }
 
         tour.getReviewHistory().add(new Tour.ReviewNote(reason, LocalDateTime.now()));
-
-        Tour saved = tourRepository.save(tour);
-        Template tpl = templateRepository.findById(saved.getTemplateId().toHexString()).orElseThrow(() -> new ResourceNotFoundException("Template no existe"));
-        TourResponse resp = buildTourResponse(saved, tpl);
-
-        resp.setHasPassword(saved.isHasPassword());
-        resp.setStatus(saved.getStatus());
-        return resp;
+        tourRepository.save(tour);
     }
 }
 

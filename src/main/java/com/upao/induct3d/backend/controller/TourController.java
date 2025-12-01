@@ -163,19 +163,21 @@ public class TourController {
     @PostMapping("/{tourId}/approve")
     @Operation(summary = "Approve tour", description = "Aprueba un tour y registra fecha en el historial.")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TourResponse> approveTour(@PathVariable String tourId) throws ResourceNotFoundException {
-        TourResponse resp = tourService.approveTour(tourId);
-        return ResponseEntity.ok(resp);
+    public ResponseEntity<ApiResponse<Map<String, String>>> approveTour(@PathVariable String tourId) throws ResourceNotFoundException {
+        tourService.approveTour(tourId);
+        Map<String, String> body = Map.of("message", "Tour aprobado correctamente");
+        return ResponseEntity.ok(new ApiResponse<>(body));
     }
 
     // Reject tour
     @PostMapping("/{tourId}/reject")
     @Operation(summary = "Reject tour", description = "Rechaza un tour y registra motivo/fecha en el historial.")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TourResponse> rejectTour(@PathVariable String tourId, @RequestBody Map<String, String> body) throws ResourceNotFoundException, AttributeException {
+    public ResponseEntity<ApiResponse<Map<String, String>>> rejectTour(@PathVariable String tourId, @RequestBody Map<String, String> body) throws ResourceNotFoundException, AttributeException {
         String reason = body.getOrDefault("reason", "");
-        TourResponse resp = tourService.rejectTour(tourId, reason);
-        return ResponseEntity.ok(resp);
+        tourService.rejectTour(tourId, reason);
+        Map<String, String> responseBody = Map.of("message", "Tour rechazado correctamente");
+        return ResponseEntity.ok(new ApiResponse<>(responseBody));
     }
 
     // List all tours for admin
