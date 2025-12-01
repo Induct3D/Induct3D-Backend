@@ -108,7 +108,6 @@ public class TourService {
         existing.setDescription(req.getDescription());
         existing.setHasPassword(req.isHasPassword());
         existing.setPassword(req.isHasPassword() ? req.getPassword() : null);
-        existing.setStatus(req.getStatus());
         existing.setMaterialColors(req.getMaterialColors());
         existing.setSteps(req.getSteps());
 
