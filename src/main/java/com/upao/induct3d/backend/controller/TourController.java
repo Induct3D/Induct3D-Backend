@@ -171,6 +171,7 @@ public class TourController {
     // Reject tour
     @PostMapping("/{tourId}/reject")
     @Operation(summary = "Reject tour", description = "Rechaza un tour y registra motivo/fecha en el historial.")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TourResponse> rejectTour(@PathVariable String tourId, @RequestBody Map<String, String> body) throws ResourceNotFoundException, AttributeException {
         String reason = body.getOrDefault("reason", "");
         TourResponse resp = tourService.rejectTour(tourId, reason);
