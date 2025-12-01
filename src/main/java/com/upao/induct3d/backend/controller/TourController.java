@@ -159,6 +159,15 @@ public class TourController {
         return ResponseEntity.ok(new ApiResponse<>(body));
     }
 
+    // Approve tour
+    @PostMapping("/{tourId}/approve")
+    @Operation(summary = "Approve tour", description = "Aprueba un tour y registra fecha en el historial.")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<TourResponse> approveTour(@PathVariable String tourId) throws ResourceNotFoundException {
+        TourResponse resp = tourService.approveTour(tourId);
+        return ResponseEntity.ok(resp);
+    }
+
     // Reject tour
     @PostMapping("/{tourId}/reject")
     @Operation(summary = "Reject tour", description = "Rechaza un tour y registra motivo/fecha en el historial.")

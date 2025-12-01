@@ -215,6 +215,26 @@ public class TourService {
                 .toList();
     }
 
+    // Approve tour
+    public TourResponse approveTour(String tourId) throws ResourceNotFoundException {
+        Tour tour = tourRepository.findById(tourId)
+                .orElseThrow(() -> new ResourceNotFoundException("Tour no encontrado"));
+
+        tour.setStatus(TourStatus.APPROVED);
+
+        if (tour.getReviewHistory() == null) {
+            tour.setReviewHistory(new ArrayList<>());
+        }
+
+        tour.getReviewHistory().add(new Tour.ReviewNote("Tour aprobado", LocalDateTime.now()));
+
+        Tour saved = tourRepository.save(tour);
+        Template tpl = templateRepository.findById(saved.getTemplateId().toHexString())
+                .orElseThrow(() -> new ResourceNotFoundException("Template no existe"));
+
+        return buildTourResponse(saved, tpl);
+    }
+
     // Reject tour
     public TourResponse rejectTour(String tourId, String reason) throws ResourceNotFoundException, AttributeException {
         if (reason == null || reason.isBlank()) {
