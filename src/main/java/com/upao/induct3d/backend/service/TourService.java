@@ -106,8 +106,8 @@ public class TourService {
 
         existing.setTourName(req.getTourName());
         existing.setDescription(req.getDescription());
-        existing.setPassword(req.getPassword());
         existing.setHasPassword(req.isHasPassword());
+        existing.setPassword(req.isHasPassword() ? req.getPassword() : null);
         existing.setStatus(req.getStatus());
         existing.setMaterialColors(req.getMaterialColors());
         existing.setSteps(req.getSteps());
@@ -191,6 +191,7 @@ public class TourService {
         resp.setTourName(tour.getTourName());
         resp.setDescription(tour.getDescription());
         resp.setHasPassword(tour.isHasPassword());
+        resp.setPassword(tour.getPassword());
         resp.setStatus(tour.getStatus());
         resp.setReviewHistory(mapReviewNotes(tour.getReviewHistory()));
         resp.setMaterialColors(tour.getMaterialColors());

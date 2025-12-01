@@ -60,7 +60,8 @@ public class TourController {
                 saved.getTourId(),
                 saved.getTourName(),
                 saved.getDescription(),
-                saved.getStatus().toString()
+                saved.getStatus().toString(),
+                saved.getPassword()
         );
 
         return ResponseEntity
@@ -144,8 +145,8 @@ public class TourController {
     @Operation(summary = "Update a tour", description = "Updates the details of a tour by its ID.")
     public ResponseEntity<ApiResponse<UpdateTourResponse>> updateTour(@PathVariable String tourId, @Valid @RequestBody UpdateTourRequest request) {
         ObjectId currentUserId = getCurrentUserId();
-        tourService.updateTour(tourId, request, currentUserId);
-        UpdateTourResponse body = new UpdateTourResponse(tourId, "Tour actualizado correctamente");
+        TourResponse updatedTour = tourService.updateTour(tourId, request, currentUserId);
+        UpdateTourResponse body = new UpdateTourResponse(tourId, "Tour actualizado correctamente", request.getPassword());
         return ResponseEntity.ok(new ApiResponse<>(body));
     }
 
