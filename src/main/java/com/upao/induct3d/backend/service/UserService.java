@@ -4,9 +4,10 @@ import com.upao.induct3d.backend.domain.JwtTokenDTO;
 import com.upao.induct3d.backend.domain.LoginUserDTO;
 import com.upao.induct3d.backend.domain.UpdateUserDTO;
 import com.upao.induct3d.backend.domain.UserDTO;
+import com.upao.induct3d.backend.domain.request.UpdateUserProfileRequest;
 import com.upao.induct3d.backend.entity.ResetPassword;
 import com.upao.induct3d.backend.entity.User;
-import com.upao.induct3d.backend.exception.AttributeException;
+import com.upao.induct3d.backend.exception.*;
 import com.upao.induct3d.backend.jwt.JwtProvider;
 import com.upao.induct3d.backend.repository.ResetPasswordRepository;
 import com.upao.induct3d.backend.repository.UserRepository;
@@ -64,35 +65,39 @@ public class UserService {
     // Get user profile
     public UserDTO getUserProfile(String username) {
         User user = userRepository.findByUsernameOrEmail(username, username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new AuthUnauthorizedException("No se ha enviado un token válido"));
 
         if (!user.isActive()) {
-            throw new RuntimeException("Usuario inactivo");
+            throw new AuthUnauthorizedException("No se ha enviado un token válido");
         }
 
         return new UserDTO(user);
     }
 
     // Update user profile
-    public UserDTO updateUserProfile(String username, UpdateUserDTO dto) throws AttributeException {
-        User user = userRepository.findByUsernameOrEmail(username, username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public UserDTO updateUserProfile(String currentUsername, UpdateUserProfileRequest request) throws AttributeException {
+        User user = userRepository.findByUsernameOrEmail(currentUsername, currentUsername)
+                .orElseThrow(() -> new AuthUnauthorizedException("No se ha enviado un token válido"));
 
         if (!user.isActive()) {
-            throw new RuntimeException("Usuario inactivo");
+            throw new AuthUnauthorizedException("No se ha enviado un token válido");
         }
 
-        user.setName(dto.getName());
-        user.setSurname(dto.getSurname());
+        user.setName(request.getName());
+        user.setSurname(request.getSurname());
 
-        User updated = userRepository.save(user);
-        return new UserDTO(updated);
+        User saved = userRepository.save(user);
+        return new UserDTO(saved);
     }
 
     // Soft delete user profile
     public void deleteUserProfile(String username) {
         User user = userRepository.findByUsernameOrEmail(username, username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new AuthUnauthorizedException("No se ha enviado un token válido"));
+
+        if (!user.isActive()) {
+            throw new DeleteNotAllowedException("No es posible eliminar este perfil");
+        }
 
         user.setActive(false);
         userRepository.save(user);
@@ -115,7 +120,7 @@ public class UserService {
     // Request reset password
     public void requestPasswordReset(String email) {
         User user = userRepository.findByUsernameOrEmail(email, email)
-                .orElseThrow(() -> new RuntimeException("Email no registrado"));
+                .orElseThrow(() -> new UserNotFoundException("No existe un usuario registrado con ese correo"));
 
         String code = String.format("%06d", new Random().nextInt(999999));
         LocalDateTime expiration = LocalDateTime.now().plusMinutes(10);
@@ -140,13 +145,14 @@ public class UserService {
     // Reset password
     public void resetPassword(String email, String code, String newPassword) {
         ResetPassword token = resetPasswordRepository.findByEmailAndCode(email, code)
-                .orElseThrow(() -> new RuntimeException("Código inválido"));
+                .orElseThrow(() -> new InvalidOrExpiredCodeException("El código para restablecer contraseña no es válido o ha expirado"));
 
-        if (token.getExpiration().isBefore(LocalDateTime.now()))
-            throw new RuntimeException("Código expirado");
+        if (token.getExpiration().isBefore(LocalDateTime.now())){
+            throw new InvalidOrExpiredCodeException("El código para restablecer contraseña no es válido o ha expirado");
+        }
 
         User user = userRepository.findByUsernameOrEmail(email, email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("No existe un usuario registrado con ese correo"));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);

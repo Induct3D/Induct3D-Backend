@@ -1,6 +1,8 @@
 package com.upao.induct3d.backend.controller;
 
 import com.upao.induct3d.backend.domain.MessageDTO;
+import com.upao.induct3d.backend.domain.response.ApiResponse;
+import com.upao.induct3d.backend.domain.response.TemplateResponse;
 import com.upao.induct3d.backend.entity.Template;
 import com.upao.induct3d.backend.exception.AttributeException;
 import com.upao.induct3d.backend.exception.ResourceNotFoundException;
@@ -62,9 +64,9 @@ public class TemplateController {
     // Get all templates from everyone
     @GetMapping
     @Operation(summary = "Get all templates", description = "Retrieves all templates available in the system.")
-    public ResponseEntity<List<Template>> getTemplates() {
-        List<Template> templates = templateService.getTemplates();
-        return ResponseEntity.ok(templates);
+    public ResponseEntity<ApiResponse<List<TemplateResponse>>> getTemplates() {
+        List<TemplateResponse> templates = templateService.getTemplates();
+        return ResponseEntity.ok(new ApiResponse<>(templates));
     }
 
     // Get url from GLB model
@@ -79,9 +81,8 @@ public class TemplateController {
     // Get template by ID
     @GetMapping("/{templateId}")
     @Operation(summary = "Get template by ID", description = "Retrieves the details of a template by its ID.")
-    public ResponseEntity<Template> getTemplateById(@PathVariable String templateId) throws ResourceNotFoundException {
-        Template template = templateRepository.findById(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException("Template no encontrado"));
-        return ResponseEntity.ok(template);
+    public ResponseEntity<ApiResponse<Template>> getTemplateById(@PathVariable String templateId) {
+        Template template = templateService.getTemplateById(templateId);
+        return ResponseEntity.ok(new ApiResponse<>(template));
     }
 }

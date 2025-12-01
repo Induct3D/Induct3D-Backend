@@ -1,5 +1,7 @@
 package com.upao.induct3d.backend.controller;
 
+import com.upao.induct3d.backend.domain.response.ApiResponse;
+import com.upao.induct3d.backend.exception.FileRequiredException;
 import com.upao.induct3d.backend.service.PictureService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +22,12 @@ public class PictureController {
     // Upload images
     @PostMapping("/upload")
     @Operation(summary = "Upload a picture", description = "Uploads a picture and returns its URL.")
-    public ResponseEntity<Map<String,String>> upload(
-            @RequestParam("file") MultipartFile file
-    ) throws IOException {
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadPicture(@RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new FileRequiredException("No se ha enviado ningún archivo");
+        }
         String url = pictureService.upload(file);
-        return ResponseEntity.ok(Collections.singletonMap("url", url));
+        return ResponseEntity.ok(new ApiResponse<>(Map.of("url", url)));
     }
 
     // Delete image by ID

@@ -3,6 +3,8 @@ package com.upao.induct3d.backend.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.upao.induct3d.backend.entity.Picture;
+import com.upao.induct3d.backend.exception.AuthUnauthorizedException;
+import com.upao.induct3d.backend.exception.UploadException;
 import com.upao.induct3d.backend.repository.PictureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,24 +21,39 @@ public class PictureService {
     @Autowired private PictureRepository pictureRepository;
 
     // Upload image and return URL
-    public String upload(MultipartFile file) throws IOException {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+    public String upload(MultipartFile file) {
+        try {
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                throw new AuthUnauthorizedException("No se ha enviado un token válido");
+            }
 
-        Map<?,?> result = cloudinary.uploader()
-                .upload(file.getBytes(),
-                        ObjectUtils.asMap(
-                                "folder", "tours",
-                                "quality", 100, //Calidad al 100%
-                                "bytes", 10485760 //Peso máximo de la imagen a 10 MB
-                        ));
+            String username = auth.getName();
+            Map<?,?> result = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "tours",
+                            "quality", 100,
+                            "bytes", 10485760 // máximo 10 MB
+                    )
+            );
 
-        String publicId = (String) result.get("public_id");
-        String url      = (String) result.get("secure_url");
+            if (result == null || result.get("secure_url") == null) {
+                throw new UploadException("No se pudo subir la imagen");
+            }
 
-        Picture pic = new Picture(publicId, url, username);
-        pictureRepository.save(pic);
+            String publicId = (String) result.get("public_id");
+            String url = (String) result.get("secure_url");
+            Picture pic = new Picture(publicId, url, username);
+            pictureRepository.save(pic);
+            return url;
 
-        return url;
+        } catch (AuthUnauthorizedException e) {
+            throw e;
+
+        } catch (Exception e) {
+            throw new UploadException("No se pudo subir la imagen");
+        }
     }
 
     // Delete image in Cloudinary and MongoDB
