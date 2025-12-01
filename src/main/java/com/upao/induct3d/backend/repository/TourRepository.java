@@ -17,6 +17,6 @@ public interface TourRepository extends MongoRepository<Tour, String> {
     List<Tour> findByUserId(ObjectId userId, Sort sort);
     Page<Tour> findByUserId(ObjectId userId, Pageable pageable);
     List<Tour> findByTemplateId(ObjectId templateId);
-    List<Tour> findByStatus(TourStatus status);
+    Page<Tour> findByStatus(TourStatus status, Pageable pageable);
 }
 

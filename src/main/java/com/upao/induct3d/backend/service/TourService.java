@@ -18,9 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,7 +70,7 @@ public class TourService {
     public Page<Tour> getAllTours(int page, int limit) {
         int pageIndex = Math.max(page, 1) - 1;
         Pageable pageable = PageRequest.of(pageIndex, limit, Sort.by(Sort.Direction.DESC, "tourId"));
-        Page<Tour> result = tourRepository.findAll(pageable);
+        Page<Tour> result = tourRepository.findByStatus(TourStatus.APPROVED, pageable);
         if (result.isEmpty()) {
             throw new ToursNotFoundException("No hay recorridos por listar");
         }
@@ -119,6 +117,7 @@ public class TourService {
         return buildTourResponse(saved, tpl);
     }
 
+    // Delete tour
     public void deleteTour(String tourId, ObjectId currentUserId) {
         Tour existing = tourRepository.findById(tourId).orElseThrow(() -> new TourNotFoundException("El tour solicitado no existe"));
         if (!existing.getUserId().equals(currentUserId)) {
@@ -139,6 +138,17 @@ public class TourService {
     // Get tour for Template
     public List<Tour> getToursByTemplate(ObjectId templateId) {
         return tourRepository.findByTemplateId(templateId);
+    }
+
+    // Get all tours ordered by status (admin)
+    public List<Tour> getAllToursOrderedByStatus() {
+        List<Tour> tours = tourRepository.findAll();
+        Map<TourStatus, Integer> order = new HashMap<>();
+        order.put(TourStatus.PENDING, 0);
+        order.put(TourStatus.REJECTED, 1);
+        order.put(TourStatus.APPROVED, 2);
+        tours.sort(Comparator.comparingInt(t -> order.getOrDefault(t.getStatus(), 99)));
+        return tours;
     }
 
     // TourResponse builder

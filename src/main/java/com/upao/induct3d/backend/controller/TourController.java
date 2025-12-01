@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -101,7 +102,7 @@ public class TourController {
     // Get all my tours
     @GetMapping("/my")
     @Operation(summary = "Get user's tours", description = "Retrieves all tours created by the authenticated user.")
-    public ResponseEntity<ApiResponse<List<TourListItemResponse>>> getMyTours(@RequestParam(name = "page", defaultValue = "1") int page,
+    public ResponseEntity<ApiResponse<List<TourStatusItemResponse>>> getMyTours(@RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "limit", required = false) Integer ignoredLimit, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AuthUnauthorizedException("No se ha enviado un token válido");
@@ -110,12 +111,8 @@ public class TourController {
         ObjectId currentUserId = getCurrentUserId();
         final int limit = 9;
         Page<Tour> pageResult = tourService.getToursByUserPaginated(currentUserId, page, limit);
-        List<TourListItemResponse> items = pageResult.getContent().stream()
-                .map(t -> new TourListItemResponse(
-                        t.getTourId(),
-                        t.getTourName(),
-                        t.getDescription()
-                ))
+        List<TourStatusItemResponse> items = pageResult.getContent().stream()
+                .map(TourStatusItemResponse::fromEntity)
                 .toList();
 
         long totalItems = pageResult.getTotalElements();
@@ -129,7 +126,7 @@ public class TourController {
         meta.put("hasNextPage", page < totalPages);
         meta.put("hasPrevPage", page > 1);
 
-        ApiResponse<List<TourListItemResponse>> response = new ApiResponse<>(items, meta);
+        ApiResponse<List<TourStatusItemResponse>> response = new ApiResponse<>(items, meta);
         return ResponseEntity.ok(response);
     }
 
@@ -165,13 +162,20 @@ public class TourController {
     // Reject tour
     @PostMapping("/{tourId}/reject")
     @Operation(summary = "Reject tour", description = "Rechaza un tour y registra motivo/fecha en el historial.")
-    public ResponseEntity<TourResponse> rejectTour(
-            @PathVariable String tourId,
-            @RequestBody Map<String, String> body
-    ) throws ResourceNotFoundException, AttributeException {
+    public ResponseEntity<TourResponse> rejectTour(@PathVariable String tourId, @RequestBody Map<String, String> body) throws ResourceNotFoundException, AttributeException {
         String reason = body.getOrDefault("reason", "");
         TourResponse resp = tourService.rejectTour(tourId, reason);
         return ResponseEntity.ok(resp);
+    }
+
+    // List all tours for admin
+    @GetMapping("/admin")
+    @Operation(summary = "Admin - list all tours with status", description = "Lists all tours ordered by status: PENDING, REJECTED, APPROVED.")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<TourStatusItemResponse>>> getAllToursForAdmin() {
+        List<Tour> tours = tourService.getAllToursOrderedByStatus();
+        List<TourStatusItemResponse> items = tours.stream().map(TourStatusItemResponse::fromEntity).toList();
+        return ResponseEntity.ok(new ApiResponse<>(items));
     }
 
 }
